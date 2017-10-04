@@ -68,6 +68,15 @@ void Messages::printMessage() {
     Serial.println();
 }
 
+bool *Messages::getStorageAvailability() {
+	return storageArray;
+}
+
+bool *Messages::getSupplyAvailability() {
+	return supplyArray;
+}
+
+
 /**
  * Read messages from the Bluetooth serial connection
  * This method should be called from the loop() function in your arduino code. It will check
@@ -79,14 +88,24 @@ bool Messages::read() {
 	if (comms.read()) {
 		switch (comms.getMessageByte(0)) {
 		case kStorageAvailability:
+			storageArray[0] = comms.getMessageByte(5) & BIT0; //need find correct index for message byte!!
+			storageArray[1] = comms.getMessageByte(5) & BIT1;
+			storageArray[2] = comms.getMessageByte(5) & BIT2;
+			storageArray[3] = comms.getMessageByte(5) & BIT3;
 			break;
 		case kSupplyAvailability:
+		supplyArray[0] = comms.getMessageByte(5) & BIT0; //need find correct index for message byte!!
+		supplyArray[1] = comms.getMessageByte(5) & BIT1;
+		supplyArray[2] = comms.getMessageByte(5) & BIT2;
+		supplyArray[3] = comms.getMessageByte(5) & BIT3;
 			break;
 		case kRadiationAlert:
 			break;
 		case kStopMovement:
+			stopped = true;
 			break;
 		case kResumeMovement:
+			stopped = false;
 			break;
 		case kRobotStatus:
 			break;

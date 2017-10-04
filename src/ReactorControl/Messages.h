@@ -45,11 +45,21 @@ public:
 	bool read();
 	void setup();
 	void printMessage();
+	bool *getStorageAvailability();
+	bool *getSupplyAvailability();
 
 	void heartbeat();
 
 private:
+	int BIT0 = 0x01;
+	int BIT1 = 0x02;
+	int BIT2 = 0x04;
+	int BIT3 = 0x08;
 	bool stopped;
+	bool storageArray[4] = {0,0,0,0};
+	bool supplyArray[4] = {0,0,0,0};
+
+
 	unsigned long timeForHeartbeat;
 
 };
