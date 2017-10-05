@@ -45,8 +45,8 @@ public:
 	bool read();
 	void setup();
 	void printMessage();
-	bool *getStorageAvailability();
-	bool *getSupplyAvailability();
+	bool* getStorageAvailability();
+	bool* getSupplyAvailability();
 
 	void heartbeat();
 

@@ -58,7 +58,7 @@ double Kp_drive = 1, Ki_drive = 0, Kd_drive = 0;
 void setup() {
   Serial.begin(9600);
   lcd.begin(16,2);
-  //msg.setup();
+  msg.setup();
   odom.setScale(0.024, 5.4);
   drive.initialize();
 
@@ -73,9 +73,6 @@ void setup() {
 
   //pinMode(reactorSwitchPort, INPUT_PULLUP);
   //pinMode(startPort, INPUT_PULLUP);
-
-
-
 }
 
 void printToLCD(){
@@ -93,28 +90,28 @@ void printToLCD(){
   lcd.print(odom.getTheta());
 }
 
+void printStorageSupplytoLCD(){
+lcd.setCursor(0,0);
+bool *storageArray = msg.getStorageAvailability();
+char buffer[20];
+sprintf(buffer,"Storage: %d %d %d %d",storageArray[0],storageArray[1],storageArray[2],storageArray[3]);
+lcd.print(buffer);
+lcd.setCursor(0,1);
+bool *supplyArray = msg.getSupplyAvailability();
+sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
+lcd.print(buffer);
+}
+
 ///////////////
 // MAIN LOOP //
 ///////////////
 void loop() {
-  //msg.heartbeat();
+  msg.heartbeat();
   odom.track(leftEncoder.read(), rightEncoder.read());
-  printToLCD();
+  //printToLCD();
 
-  if(drive.driveDistance(odom.getY(), 12)){
-    drive.arcadeDrive(0, 0);
-  }
+  printStorageSupplytoLCD();
 
-  //drive.driveDistance(odom.getY(), 12);
-
-  //drive.arcadeDrive(0, 1);
-
-  // Serial.print(odom.getX());
-  // Serial.print(" ");
-  // Serial.print(odom.getY());
-  // Serial.print(" ");
-  // Serial.print(odom.getTheta());
-  // Serial.println(" ");
 
   if(!digitalRead(startPort)){
     leftEncoder.write(0);

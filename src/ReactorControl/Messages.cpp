@@ -68,13 +68,33 @@ void Messages::printMessage() {
     Serial.println();
 }
 
-bool *Messages::getStorageAvailability() {
+bool* Messages::getStorageAvailability() {
 	return storageArray;
 }
 
-bool *Messages::getSupplyAvailability() {
+bool* Messages::getSupplyAvailability() {
 	return supplyArray;
 }
+
+/*
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+2 0 0 0 F7
+1 0 0 1 F7
+4 0 3 F3
+Robot stop!
+*/
 
 
 /**
@@ -88,16 +108,16 @@ bool Messages::read() {
 	if (comms.read()) {
 		switch (comms.getMessageByte(0)) {
 		case kStorageAvailability:
-			storageArray[0] = comms.getMessageByte(5) & BIT0; //need find correct index for message byte!!
-			storageArray[1] = comms.getMessageByte(5) & BIT1;
-			storageArray[2] = comms.getMessageByte(5) & BIT2;
-			storageArray[3] = comms.getMessageByte(5) & BIT3;
+			storageArray[0] = comms.getMessageByte(3) & BIT0; //need find correct index for message byte!!
+			storageArray[1] = comms.getMessageByte(3) & BIT1;
+			storageArray[2] = comms.getMessageByte(3) & BIT2;
+			storageArray[3] = comms.getMessageByte(3) & BIT3;
 			break;
 		case kSupplyAvailability:
-		supplyArray[0] = comms.getMessageByte(5) & BIT0; //need find correct index for message byte!!
-		supplyArray[1] = comms.getMessageByte(5) & BIT1;
-		supplyArray[2] = comms.getMessageByte(5) & BIT2;
-		supplyArray[3] = comms.getMessageByte(5) & BIT3;
+		supplyArray[0] = comms.getMessageByte(3) & BIT0; //need find correct index for message byte!!
+		supplyArray[1] = comms.getMessageByte(3) & BIT1;
+		supplyArray[2] = comms.getMessageByte(3) & BIT2;
+		supplyArray[3] = comms.getMessageByte(3) & BIT3;
 			break;
 		case kRadiationAlert:
 			break;
