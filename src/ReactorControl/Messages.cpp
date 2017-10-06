@@ -52,7 +52,7 @@ bool Messages::isStopped() {
  * timing can easily be done in the loop() function of your program.
  */
 void Messages::sendHeartbeat() {
-	comms.writeMessage(kHeartbeat, 0x0A, 0x00);
+	comms.writeMessage(kHeartbeat, 0x0B, 0x00);
 }
 
 /**
@@ -64,9 +64,12 @@ void Messages::sendHeartbeat() {
 */
 
 void Messages::sendRadiationAlert(char type) {
-	if      (type & BIT1){comms.writeMessage(kRadiationAlert, 0x0A, 0x2C);} //new rod is exposed
-	else if (type & BIT2){comms.writeMessage(kRadiationAlert, 0x0A, 0xFF);} //spent rod is exposed
-	else                 {comms.writeMessage(kRadiationAlert, 0x0A, 0x00);} //no radiation is exposed
+	if (type & BIT0){
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x2C); //spent rod is exposed
+	} else if (type & BIT1){
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0xFF); //new rod is exposed
+	} else {
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x00);} //no radiation is exposed
 }
 
 /**

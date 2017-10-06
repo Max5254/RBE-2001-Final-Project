@@ -107,10 +107,12 @@ lcd.print(buffer);
 ///////////////
 void loop() {
   msg.heartbeat();
+  msg.sendRadiationAlert(0x01);
   odom.track(leftEncoder.read(), rightEncoder.read());
   //printToLCD();
 
   printStorageSupplytoLCD();
+
 
 
   if(!digitalRead(startPort)){
@@ -119,5 +121,5 @@ void loop() {
     odom.reset(0,0,0);
   }
 
-  delay(20);
+  delay(2000);
 }
