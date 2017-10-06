@@ -42,6 +42,7 @@ public:
 
 	bool isStopped();
 	void sendHeartbeat();
+	void sendRadiationAlert(char type);
 	bool read();
 	void setup();
 	void printMessage();

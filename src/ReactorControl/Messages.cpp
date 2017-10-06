@@ -52,7 +52,21 @@ bool Messages::isStopped() {
  * timing can easily be done in the loop() function of your program.
  */
 void Messages::sendHeartbeat() {
-	comms.writeMessage(kHeartbeat, 0x0a, 0x00);
+	comms.writeMessage(kHeartbeat, 0x0A, 0x00);
+}
+
+/**
+* Send a radiation alert message to the field to let it know what type of radiation it
+* is carrying. this should be called by your robot program whenever it is carrying
+* radiation or if it not carrying radiation. you must pass in a hex value to specify
+* what you are carrying. 0x0 is for nothing, 0x1 is for spent rod, and 0x2 is for new rod.
+* passing in any other hex value will result in no radiation being the alert.
+*/
+
+void Messages::sendRadiationAlert(char type) {
+	if      (type & BIT1){comms.writeMessage(kRadiationAlert, 0x0A, 0x2C);} //new rod is exposed
+	else if (type & BIT2){comms.writeMessage(kRadiationAlert, 0x0A, 0xFF);} //spent rod is exposed
+	else                 {comms.writeMessage(kRadiationAlert, 0x0A, 0x00);} //no radiation is exposed
 }
 
 /**
@@ -108,13 +122,13 @@ bool Messages::read() {
 	if (comms.read()) {
 		switch (comms.getMessageByte(0)) {
 		case kStorageAvailability:
-			storageArray[0] = comms.getMessageByte(3) & BIT0; //need find correct index for message byte!!
+			storageArray[0] = comms.getMessageByte(3) & BIT0;
 			storageArray[1] = comms.getMessageByte(3) & BIT1;
 			storageArray[2] = comms.getMessageByte(3) & BIT2;
 			storageArray[3] = comms.getMessageByte(3) & BIT3;
 			break;
 		case kSupplyAvailability:
-		supplyArray[0] = comms.getMessageByte(3) & BIT0; //need find correct index for message byte!!
+		supplyArray[0] = comms.getMessageByte(3) & BIT0;
 		supplyArray[1] = comms.getMessageByte(3) & BIT1;
 		supplyArray[2] = comms.getMessageByte(3) & BIT2;
 		supplyArray[3] = comms.getMessageByte(3) & BIT3;
