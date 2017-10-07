@@ -42,6 +42,7 @@ public:
 
 	bool isStopped();
 	void sendHeartbeat();
+	void PeriodicRadiationStatus(char type);
 	void sendRadiationAlert(char type);
 	bool read();
 	void setup();
@@ -62,6 +63,7 @@ private:
 
 
 	unsigned long timeForHeartbeat;
+	unsigned long timeForRadiation;
 
 };
 

@@ -20,12 +20,33 @@ Messages::Messages() {
 }
 
 void Messages::heartbeat(){
-	if (Messages::read()) {
-		Messages::printMessage();
-	}
 	if (millis() > timeForHeartbeat) {
 		timeForHeartbeat = millis() + 1000;
 		Messages::sendHeartbeat();
+	}
+}
+
+void Messages::PeriodicRadiationStatus(char type){
+	if (millis() > timeForRadiation) {
+		timeForRadiation = millis() + 2000;
+		sendRadiationAlert(type);
+	}
+}
+
+/**
+* Send a radiation alert message to the field to let it know what type of radiation it
+* is carrying. this should be called by your robot program whenever it is carrying
+* radiation or if it not carrying radiation. you must pass in a hex value to specify
+* what you are carrying. 0x0 is for nothing, 0x1 is for spent rod, and 0x2 is for new rod.
+* passing in any other hex value will result in no radiation being the alert.
+*/
+void Messages::sendRadiationAlert(char type) {
+	if (type & BIT0){
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x2C); //spent rod is exposed
+	} else if (type & BIT1){
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0xFF); //new rod is exposed
+	} else {
+		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x00); //no radiation is exposed
 	}
 }
 
@@ -55,22 +76,7 @@ void Messages::sendHeartbeat() {
 	comms.writeMessage(kHeartbeat, 0x0B, 0x00);
 }
 
-/**
-* Send a radiation alert message to the field to let it know what type of radiation it
-* is carrying. this should be called by your robot program whenever it is carrying
-* radiation or if it not carrying radiation. you must pass in a hex value to specify
-* what you are carrying. 0x0 is for nothing, 0x1 is for spent rod, and 0x2 is for new rod.
-* passing in any other hex value will result in no radiation being the alert.
-*/
 
-void Messages::sendRadiationAlert(char type) {
-	if (type & BIT0){
-		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x2C); //spent rod is exposed
-	} else if (type & BIT1){
-		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0xFF); //new rod is exposed
-	} else {
-		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x00);} //no radiation is exposed
-}
 
 /**
  * Print message for debugging
