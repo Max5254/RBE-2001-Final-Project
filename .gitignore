@@ -2,3 +2,9 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
+
+src/src_AVR_MEGA2560_atmega2560.hex
+
+.DS_Store
+
+.DS_Store

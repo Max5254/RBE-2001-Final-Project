@@ -3,6 +3,9 @@
 #include <Servo.h>
 #include "ReactorControl/Messages.h"
 #include "drive.h"
+#include "arm.h"
+#include "helpers.h"
+
 
 LiquidCrystal lcd(40,41,42,43,44,45);
 Messages msg;
@@ -27,10 +30,9 @@ const int lineFollowerBackPort = A0;
 
 
 //Motors
-Servo arm;
-Servo gripper;
 
 Drive drive;
+Arm arm;
 
 ///////////
 // SETUP //
@@ -45,9 +47,8 @@ void setup() {
   pinMode(beamBreak,INPUT_PULLUP);
   pinMode(limitSwitch,INPUT_PULLUP);
 
-  arm.attach(armPort, 1000, 2000);
-  gripper.attach(gripperPort, 1000, 2000);
   drive.initialize();
+  arm.initialize(armPort, gripperPort, armPotPort);
 
 }
 
@@ -82,17 +83,27 @@ lcd.print(buffer);
 // MAIN LOOP //
 ///////////////
 void loop() {
-  arm.write(90);
-  gripper.write(90);
+  if (!digitalRead(startPort)) arm.grab();
+  else if (!digitalRead(limitSwitch)) arm.release();
+  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch));
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(arm.intakeInput);
+  lcd.setCursor(0,1);
+  lcd.print(arm.intakeOutput);
+  lcd.setCursor(8,1);
+  lcd.print(arm.Kp_intake);
+  //arm.write(90);
+  //gripper.write(90);
 
   msg.heartbeat();
   //msg.sendRadiationAlert(0x01);
   drive.odometry();
-  printToLCD();
+  // printToLCD();
 
   //printStorageSupplytoLCD();
 
-if(digitalRead(startPort)){
+if(digitalRead(startPort) && false){
   if(drive.driveDistance(12)){
       drive.arcadeDrive(0, 0);
     }
