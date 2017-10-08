@@ -145,10 +145,12 @@ bool Messages::read() {
 		case kRadiationAlert:
 			break;
 		case kStopMovement:
-			stopped = true;
+			if (comms.getMessageByte(2) == 0x0B){
+				stopped = true;}
 			break;
 		case kResumeMovement:
-			stopped = false;
+		if (comms.getMessageByte(2) == 0x0B){
+			stopped = false;}
 			break;
 		case kRobotStatus:
 			break;
