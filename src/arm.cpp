@@ -5,7 +5,7 @@
 #include "Servo.h"
 #include "helpers.h"
 
-#define ARM_UP 90
+#define ARM_UP 85
 #define ARM_DOWN 0
 #define INTAKE_IN 65
 #define INTAKE_OUT 980
@@ -13,7 +13,7 @@
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
 
 Arm::Arm() :
-armPID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,DIRECT),
+armPID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,REVERSE),
 intakePID(&intakeInput,&intakeOutput,&intakeSetpoint,Kp_intake,Ki_intake,Kd_intake,DIRECT){
 }
 
@@ -41,6 +41,8 @@ void Arm::initialize(int _armPort, int _intakePort, int _intakePotPort){
 	mma.setRange(MMA8451_RANGE_2_G);
 	armInput = getArmAngle();
 	intakeInput = analogRead(intakePotPort);
+    
+    armPID.setIRange(10);
 	// armPID = PID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,AUTOMATIC);
 	// intakePID = PID(&intakeInput,&intakeOutput,&intakeSetpoint,Kp_intake,Ki_intake,Kd_intake,AUTOMATIC);
 }
@@ -49,8 +51,8 @@ double Arm::getArmAngle(){
 	mma.read();
 	sensors_event_t event;
 	mma.getEvent(&event);
-	float ang = 90 - atan(event.acceleration.x / event.acceleration.y) * 57.3;
-	if (ang < -50) ang += 180;
+	float ang = 90 - atan(event.acceleration.x / event.acceleration.y) * 57.3 + 2;
+	if (ang > 120) ang -= 180;
 	return ang;
 }
 
@@ -90,21 +92,21 @@ bool Arm::raiseArm(){
 	//Returns true when target reached
 	armSetpoint = ARM_UP;
 	armActive = !armAtSetpoint();
-	return armAtSetpoint();
+	return booleanDelay(armAtSetpoint(),500);
 }
 
 bool Arm::lowerArm(){
-	armSetpoint = ARM_UP;
+	armSetpoint = ARM_DOWN;
 	armActive = !armAtSetpoint();
-	return armAtSetpoint();
+	return booleanDelay(armAtSetpoint(), 500);
 }
 
 bool Arm::grab(){
 	intakeSetpoint = INTAKE_IN;
-	return intakeAtSetpoint();
+	return booleanDelay(intakeAtSetpoint(), 500);
 }
 
 bool Arm::release(){
 	intakeSetpoint = INTAKE_OUT;
-	return intakeAtSetpoint();
+	return booleanDelay(intakeAtSetpoint(), 500);
 }

@@ -20,8 +20,8 @@ public:
 	bool release();
 //private:
 	double getArmAngle();
-	double Kp_arm = 1, Ki_arm = 0, Kd_arm = 0, armThreshold = 5;
-	double Kp_intake = .013, Ki_intake = 0, Kd_intake = 0.001, intakeThreshold = 10;
+	double Kp_arm = .025, Ki_arm = 0.01, Kd_arm = 0.001, armThreshold = 4;
+	double Kp_intake = .013, Ki_intake = 0, Kd_intake = 0.001, intakeThreshold = 20;
 	double armInput, armOutput, armSetpoint;
 	double intakeInput, intakeOutput, intakeSetpoint;
 	int armPort, intakePort, intakePotPort;

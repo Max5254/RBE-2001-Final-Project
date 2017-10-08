@@ -23,6 +23,9 @@ const int gripperPort = 9;
 const int startPort = 22;
 const int beamBreak = 12;
 const int limitSwitch = 13;
+
+const int debugA = 23;
+const int debugB = 24;
 //Analog Input
 const int armPotPort = A2;
 const int lineFollowerFrontPort = A1;
@@ -50,6 +53,8 @@ void setup() {
   pinMode(startPort,INPUT_PULLUP);
   pinMode(beamBreak,INPUT_PULLUP);
   pinMode(limitSwitch,INPUT_PULLUP);
+  pinMode(debugA,INPUT_PULLUP);
+  pinMode(debugB,INPUT_PULLUP);
 
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
@@ -106,11 +111,42 @@ void loop() {
     msg.PeriodicRadiationStatus(0x01);
     drive.odometry();
 
-  // if (!digitalRead(startPort)) arm.grab();
-  // else if (!digitalRead(limitSwitch)) arm.release();
-  // arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch));
+  // if (!digitalRead(startPort)) arm.raiseArm();
+  // else if (!digitalRead(limitSwitch)) arm.lowerArm();
+  // if (!digitalRead(debugA)) arm.grab();
+  // else if (!digitalRead(debugB)) arm.release();
+  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) || !digitalRead(debugA) || !digitalRead(debugB));
 
-  printOdomToLCD();
+  lcd.setCursor(0,0);
+  lcd.print(arm.armInput);
+  lcd.setCursor(0,1);
+  lcd.print(arm.armOutput);
+  lcd.setCursor(8,0);
+  lcd.print(arm.armSetpoint);
+
+  bool pressed = digitalRead(startPort);
+
+if(pressed){
+switch(i){
+  case 0:
+  if(arm.grab()){ i++; }
+  break;
+  case 1:
+  if(arm.raiseArm()){ i++; }
+  break;
+  case 2:
+  if(arm.release()){ i++; }
+  break;
+  case 3:
+  if(arm.lowerArm()){ i++; }
+  break;
+}
+} else {
+  drive.arcadeDrive(0, 0);
+}
+
+
+  // printOdomToLCD();
   //printStorageSupplyToLCD();
   //printIntakeToLCD();
 
@@ -132,23 +168,23 @@ void loop() {
 //     drive.arcadeDrive(0, 0);
 //   }
 
-bool pressed = digitalRead(startPort);
+// bool pressed = digitalRead(startPort);
 
-if(pressed){
-switch(i){
-  case 0:
-  if(drive.driveDistance(12,0, pressed)){ i++; }
-  break;
-  case 1:
-  if(drive.turnToAngle(90, pressed)){ i++; }
-  break;
-  case 2:
-  if(drive.driveDistance(24,90, pressed)){ i++; }
-  break;
-}
-} else {
-  drive.arcadeDrive(0, 0);
-}
+// if(pressed){
+// switch(i){
+//   case 0:
+//   if(drive.driveDistance(12,0, pressed)){ i++; }
+//   break;
+//   case 1:
+//   if(drive.turnToAngle(90, pressed)){ i++; }
+//   break;
+//   case 2:
+//   if(drive.driveDistance(24,90, pressed)){ i++; }
+//   break;
+// }
+// } else {
+//   drive.arcadeDrive(0, 0);
+// }
 
 // if(digitalRead(startPort)){
 //   drive.arcadeDrive(0.75, 0);
