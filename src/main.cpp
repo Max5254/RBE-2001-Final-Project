@@ -34,6 +34,10 @@ const int lineFollowerBackPort = A0;
 Drive drive;
 Arm arm;
 
+//typedef void (*FP)();
+//void (*eventHandlers[3])(std::bool);
+
+//typedef bool (*func)(double a, bool b);
 ///////////
 // SETUP //
 ///////////
@@ -49,6 +53,10 @@ void setup() {
 
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
+
+ //func a[3];
+  //func a[] = {drive.driveDistance(12,true),drive.turnToAngle(90,true),drive.driveDistance(12,true)};
+
 
 }
 
@@ -89,6 +97,7 @@ void printIntakeToLCD(){
   lcd.print(arm.Kp_intake);
 }
 
+
 ///////////////
 // MAIN LOOP //
 ///////////////
@@ -123,6 +132,11 @@ if(digitalRead(startPort)){
     drive.arcadeDrive(0, 0);
   }
 
+// if(digitalRead(startPort)){
+//   drive.arcadeDrive(0.75, 0);
+// } else {
+//   drive.arcadeDrive(0, 0);
+// }
 
   if(!digitalRead(limitSwitch)){
     drive.reset(0,0,0);

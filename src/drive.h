@@ -54,23 +54,22 @@ private:
   Servo leftDrive;
   Servo rightDrive;
 
-  double driveSlewRate = 0.05;
-  double driveNegativeSlewRate = 0.2;
+  double driveSlewRate = 0.01;
+  double driveNegativeSlewRate = 0.1;
 
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.07, Ki_drive = 0.0, Kd_drive = 0.01;
+  double Kp_drive = 0.1, Ki_drive = 0.0, Kd_drive = 0.01;
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;
   double Kp_straight = 0.015, Ki_straight = 0, Kd_straight = 0.0;
   PID straightPID;
 
-  double turnSlewRate = 0.05;
-  double turnNegativeSlewRate = 0.2;
-
-  double turnTolerance = 2;
+  double turnSlewRate = 0.01;
+  double turnNegativeSlewRate = 0.5;
+  double turnTolerance = 1;
   double turnInput, turnOutputDesired, turnOutput, turnSetpoint;
-  double Kp_turn = 0.003, Ki_turn = 0.002, Kd_turn = 0.0;
+  double Kp_turn = 0.01, Ki_turn = 0.03, Kd_turn = 0.001;
   PID turnPID;
 
 };

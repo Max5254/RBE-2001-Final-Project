@@ -11,12 +11,13 @@ Drive::Drive() :
 }
 
 void Drive::initialize(){
-     drivePID.SetOutputLimits(-0.5,0.5);
+     drivePID.SetOutputLimits(-0.75,0.75);
      drivePID.SetMode(AUTOMATIC);
      straightPID.SetOutputLimits(-0.5,0.5);
      straightPID.SetMode(AUTOMATIC);
      turnPID.SetOutputLimits(-0.5,0.5);
      turnPID.SetMode(AUTOMATIC);
+     turnPID.setIRange(10);
 
      leftDrive.attach(leftDrivePort, 1000, 2000);
      rightDrive.attach(rightDrivePort, 1000, 2000);
@@ -80,7 +81,7 @@ bool Drive::turnToAngle(double angle, bool enabled){
   Serial.print(" ");
   Serial.println(turnOutput);
 
-  return false; //booleanDelay(turnInput > driveSetpoint - turnTolerance || turnInput < driveSetpoint + turnTolerance, 500);
+  return booleanDelay(abs(turnPID.getError()) < turnTolerance, 500);
 }
 
 void Drive::arcadeDrive(double throttle, double turn){
