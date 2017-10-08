@@ -5,6 +5,8 @@
 #include "drive.h"
 #include "arm.h"
 #include "helpers.h"
+#include <Vector.h>
+
 
 
 LiquidCrystal lcd(40,41,42,43,44,45);
@@ -34,14 +36,30 @@ const int lineFollowerBackPort = A0;
 Drive drive;
 Arm arm;
 
-//typedef void (*FP)();
-//void (*eventHandlers[3])(std::bool);
+bool driveDistance(double a, double b, bool c){
+  return false;
+}
 
-//typedef bool (*func)(double a, bool b);
+//bool (*functptr[])(double,double,bool)= {&Drive::driveDistance,driveDistance} ;
+
+Vector<bool(*)(double,double,bool)> vof;
+
+void addThingy(bool (*function)(double,double,bool))
+{
+    //Don't take the address of the address:
+    vof.push_back(function);
+}
+
+using namespace std;
+
 ///////////
 // SETUP //
 ///////////
 void setup() {
+  addThingy(*driveDistance(0,0,false));
+
+  vof[0];
+
   Serial.begin(9600);
   lcd.begin(16,2);
   msg.setup();
@@ -54,9 +72,8 @@ void setup() {
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
 
- //func a[3];
-  //func a[] = {drive.driveDistance(12,true),drive.turnToAngle(90,true),drive.driveDistance(12,true)};
-
+ //bool (*fn[])(double, double, bool);
+ //static fn funcs[] = {drive.driveDistance, drive.driveDistance};
 
 }
 
