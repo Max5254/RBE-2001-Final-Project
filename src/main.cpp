@@ -45,23 +45,52 @@ bool driveDistance(double a, double b, bool c){
 
 //bool (*functptr[])(double,double,bool)= {&Drive::driveDistance,driveDistance} ;
 
-Vector<bool(*)(double,double,bool)> vof;
+//Vector<bool(*)(double,double,bool)> vof;
 
-void addThingy(bool (*function)(double,double,bool))
-{
-    //Don't take the address of the address:
-    vof.push_back(function);
+// void addThingy(bool (*function)(double,double,bool))
+// {
+//     vof.push_back(function);
+// }
+
+bool armGrab(double a, double b, bool c){
+  return arm.grab();
 }
 
-using namespace std;
+bool armRaise(double a, double b, bool c){
+  return arm.raiseArm();
+}
+//using namespace std;
+
+struct task{
+  int function;
+  int distance;
+  int angle;
+};
+
+
+
+Vector< task > arr;
+
+task make_task(int x, int y,int z) {
+    task mytask = {x, y, z};
+    return mytask;
+}
+
+//Vector <int> v ;//{1,2};
 
 ///////////
 // SETUP //
 ///////////
 void setup() {
-  addThingy(*driveDistance(0,0,false));
+  //addThingy(armGrab);
+  //addThingy(armRaise);
+  //int v[] = 1;
+  arr.push_back(make_task(0, 0, 0));
+  arr.push_back(make_task(1, 0, 0));
+  arr.push_back(make_task(2, 0, 0));
 
-  vof[0];
+
+
 
   Serial.begin(9600);
   lcd.begin(16,2);
@@ -82,42 +111,6 @@ void setup() {
 
 }
 
-void printOdomToLCD(){
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("X:   Y:   T:");
-  //char buffer[16];
-  //sprintf(buffer, "%.1f %.1f %.1f", odom.getX(), odom.getY(),odom.getTheta());
-  //lcd.print(buffer);
-  lcd.setCursor(0, 1);
-  lcd.print(drive.getX());
-  lcd.setCursor(6, 1);
-  lcd.print(drive.getY());
-  lcd.setCursor(12, 1);
-  lcd.print(drive.getTheta());
-}
-
-void printStorageSupplyToLCD(){
-lcd.setCursor(0,0);
-bool *storageArray = msg.getStorageAvailability();
-char buffer[20];
-sprintf(buffer,"Storage: %d %d %d %d",storageArray[0],storageArray[1],storageArray[2],storageArray[3]);
-lcd.print(buffer);
-lcd.setCursor(0,1);
-bool *supplyArray = msg.getSupplyAvailability();
-sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
-lcd.print(buffer);
-}
-
-void printIntakeToLCD(){
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(arm.intakeInput);
-  lcd.setCursor(0,1);
-  lcd.print(arm.intakeOutput);
-  lcd.setCursor(8,1);
-  lcd.print(arm.Kp_intake);
-}
 
 int i = 0;
 ///////////////
@@ -134,33 +127,47 @@ void loop() {
   // else if (!digitalRead(debugB)) arm.release();
   arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) || !digitalRead(debugA) || !digitalRead(debugB));
 
-  lcd.setCursor(0,0);
-  lcd.print(arm.armInput);
-  lcd.setCursor(0,1);
-  lcd.print(arm.armOutput);
-  lcd.setCursor(8,0);
-  lcd.print(arm.armSetpoint);
-
   bool pressed = digitalRead(startPort);
+  // if(vof[i](0,0,false)){
+  //   i++;
+  // }
 
-if(pressed){
-switch(i){
+switch (arr[i].function) {
   case 0:
-  if(arm.grab()){ i++; }
-  break;
+    if(arm.grab())
+      i++;
+    break;
   case 1:
-  if(arm.raiseArm()){ i++; }
-  break;
+    if(arm.raiseArm())
+      i++;
+    break;
   case 2:
-  if(arm.release()){ i++; }
-  break;
-  case 3:
-  if(arm.lowerArm()){ i++; }
-  break;
+    if(arm.release())
+      i++;
+    break;
 }
-} else {
-  drive.arcadeDrive(0, 0);
-}
+
+
+Serial.println(i);
+
+// if(pressed){
+// switch(i){
+//   case 0:
+//   if(arm.grab()){ i++; }
+//   break;
+//   case 1:
+//   if(arm.raiseArm()){ i++; }
+//   break;
+//   case 2:
+//   if(arm.release()){ i++; }
+//   break;
+//   case 3:
+//   if(arm.lowerArm()){ i++; }
+//   break;
+// }
+// } else {
+//   drive.arcadeDrive(0, 0);
+// }
 
 
   // printOdomToLCD();
@@ -217,4 +224,51 @@ switch(i){
   }
 
   delay(20);
+}
+
+
+void printOdomToLCD(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("X:   Y:   T:");
+  //char buffer[16];
+  //sprintf(buffer, "%.1f %.1f %.1f", odom.getX(), odom.getY(),odom.getTheta());
+  //lcd.print(buffer);
+  lcd.setCursor(0, 1);
+  lcd.print(drive.getX());
+  lcd.setCursor(6, 1);
+  lcd.print(drive.getY());
+  lcd.setCursor(12, 1);
+  lcd.print(drive.getTheta());
+}
+
+void printStorageSupplyToLCD(){
+lcd.setCursor(0,0);
+bool *storageArray = msg.getStorageAvailability();
+char buffer[20];
+sprintf(buffer,"Storage: %d %d %d %d",storageArray[0],storageArray[1],storageArray[2],storageArray[3]);
+lcd.print(buffer);
+lcd.setCursor(0,1);
+bool *supplyArray = msg.getSupplyAvailability();
+sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
+lcd.print(buffer);
+}
+
+void printIntakeToLCD(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(arm.intakeInput);
+  lcd.setCursor(0,1);
+  lcd.print(arm.intakeOutput);
+  lcd.setCursor(8,1);
+  lcd.print(arm.Kp_intake);
+}
+
+void printArmToLCD(){
+  lcd.setCursor(0,0);
+  lcd.print(arm.armInput);
+  lcd.setCursor(0,1);
+  lcd.print(arm.armOutput);
+  lcd.setCursor(8,0);
+  lcd.print(arm.armSetpoint);
 }
