@@ -2,7 +2,8 @@
 
 Drive::Drive() :
  drivePID(&driveInput,&driveOutputDesired,&driveSetpoint,Kp_drive,Ki_drive,Kd_drive,DIRECT),
- straightPID(&straightInput,&straightOutputDesired,&straightSetpoint,Kp_straight,Ki_straight,Kd_straight,DIRECT),
+ straightPID(&straightInput,&straightOutput,&straightSetpoint,Kp_straight,Ki_straight,Kd_straight,DIRECT),
+ turnPID(&turnInput,&turnOutputDesired,&turnSetpoint,Kp_turn,Ki_turn,Kd_turn,DIRECT),
  leftEncoder(leftEncoderA,leftEncoderB),
  rightEncoder(rightEncoderA,rightencoderB),
  odom(0,0,0) {
@@ -10,10 +11,12 @@ Drive::Drive() :
 }
 
 void Drive::initialize(){
-     drivePID.SetOutputLimits(-0.75,0.75);
+     drivePID.SetOutputLimits(-0.5,0.5);
      drivePID.SetMode(AUTOMATIC);
-     straightPID.SetOutputLimits(-0.75,0.75);
+     straightPID.SetOutputLimits(-0.5,0.5);
      straightPID.SetMode(AUTOMATIC);
+     turnPID.SetOutputLimits(-0.5,0.5);
+     turnPID.SetMode(AUTOMATIC);
 
      leftDrive.attach(leftDrivePort, 1000, 2000);
      rightDrive.attach(rightDrivePort, 1000, 2000);
@@ -24,21 +27,60 @@ void Drive::initialize(){
 }
 
 
-bool Drive::driveDistance(double setpoint){
+bool Drive::driveDistance(double setpoint, bool enabled){
 
   driveInput = getY();
   driveSetpoint = setpoint;
   drivePID.Compute();
 
+  straightInput = getTheta();
+  straightSetpoint = 0;
+  straightPID.Compute();
+
+  if(enabled){
   if (driveOutputDesired > driveOutput){
-    driveOutput += slewRate;
+    driveOutput += driveOutputDesired - driveOutput > driveSlewRate ? driveSlewRate : driveOutputDesired - driveOutput;
   } else {
-    driveOutput -= 0.2;
+    driveOutput -= driveOutput - driveOutputDesired > driveNegativeSlewRate ? driveNegativeSlewRate : driveOutput - driveOutputDesired;
   }
-  arcadeDrive(driveOutput , 0);
+} else {
+  driveOutput = 0;
+}
+  arcadeDrive(driveOutput , straightOutput);
+  // char buff[20];
+  // sprintf(buff,"%.1f %.1f",straightInput, straightOutput);
+  // Serial.println(buff);
+  Serial.print(straightInput);
+  Serial.print(" ");
+  Serial.println(straightOutput);
 
   return booleanDelay(getY() < setpoint + driveTolerance && getY() > setpoint - driveTolerance,500);;
 
+}
+
+bool Drive::turnToAngle(double angle, bool enabled){
+  turnInput = getTheta();
+  turnSetpoint = angle;
+  turnPID.Compute();
+
+  if(enabled){
+  if (turnOutputDesired > turnOutput){
+    turnOutput += turnOutputDesired - turnOutput > turnSlewRate ? turnSlewRate : turnOutputDesired - turnOutput;
+  } else {
+    turnOutput -= turnOutput - turnOutputDesired > turnNegativeSlewRate ? turnNegativeSlewRate : turnOutput - turnOutputDesired;
+  }
+  } else {
+  turnOutput = 0;
+  }
+
+  arcadeDrive(0, turnOutput);
+  Serial.print(turnInput);
+  Serial.print(" ");
+  Serial.print(turnSetpoint);
+  Serial.print(" ");
+  Serial.println(turnOutput);
+
+  return false; //booleanDelay(turnInput > driveSetpoint - turnTolerance || turnInput < driveSetpoint + turnTolerance, 500);
 }
 
 void Drive::arcadeDrive(double throttle, double turn){

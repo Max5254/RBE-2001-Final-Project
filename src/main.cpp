@@ -52,7 +52,7 @@ void setup() {
 
 }
 
-void printToLCD(){
+void printOdomToLCD(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("X:   Y:   T:");
@@ -67,7 +67,7 @@ void printToLCD(){
   lcd.print(drive.getTheta());
 }
 
-void printStorageSupplytoLCD(){
+void printStorageSupplyToLCD(){
 lcd.setCursor(0,0);
 bool *storageArray = msg.getStorageAvailability();
 char buffer[20];
@@ -79,13 +79,7 @@ sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[
 lcd.print(buffer);
 }
 
-///////////////
-// MAIN LOOP //
-///////////////
-void loop() {
-  if (!digitalRead(startPort)) arm.grab();
-  else if (!digitalRead(limitSwitch)) arm.release();
-  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch));
+void printIntakeToLCD(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(arm.intakeInput);
@@ -93,18 +87,35 @@ void loop() {
   lcd.print(arm.intakeOutput);
   lcd.setCursor(8,1);
   lcd.print(arm.Kp_intake);
-  //arm.write(90);
-  //gripper.write(90);
+}
 
-  msg.heartbeat();
-  //msg.sendRadiationAlert(0x01);
-  drive.odometry();
-  // printToLCD();
+///////////////
+// MAIN LOOP //
+///////////////
+void loop() {
+    msg.heartbeat();
+    msg.PeriodicRadiationStatus(0x01);
+    drive.odometry();
 
-  //printStorageSupplytoLCD();
+  //if (!digitalRead(startPort)) arm.grab();
+  //else if (!digitalRead(limitSwitch)) arm.release();
+  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) && false);
 
-if(digitalRead(startPort) && false){
-  if(drive.driveDistance(12)){
+  printOdomToLCD();
+  //printStorageSupplyToLCD();
+  //printIntakeToLCD();
+
+// if(digitalRead(startPort)){
+//   if(drive.driveDistance(12,digitalRead(startPort))){
+//       drive.arcadeDrive(0, 0);
+//     }
+//   //drive.arcadeDrive(0.75, 0);
+//   } else {
+//     drive.arcadeDrive(0, 0);
+//   }
+
+if(digitalRead(startPort)){
+  if(drive.turnToAngle(90,digitalRead(startPort))){
       drive.arcadeDrive(0, 0);
     }
   //drive.arcadeDrive(0.75, 0);
@@ -112,7 +123,6 @@ if(digitalRead(startPort) && false){
     drive.arcadeDrive(0, 0);
   }
 
-  //drive.arcadeDrive(0, 0);
 
   if(!digitalRead(limitSwitch)){
     drive.reset(0,0,0);
