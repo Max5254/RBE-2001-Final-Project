@@ -97,7 +97,7 @@ void printIntakeToLCD(){
   lcd.print(arm.Kp_intake);
 }
 
-
+int i = 0;
 ///////////////
 // MAIN LOOP //
 ///////////////
@@ -106,9 +106,9 @@ void loop() {
     msg.PeriodicRadiationStatus(0x01);
     drive.odometry();
 
-  //if (!digitalRead(startPort)) arm.grab();
-  //else if (!digitalRead(limitSwitch)) arm.release();
-  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) && false);
+  // if (!digitalRead(startPort)) arm.grab();
+  // else if (!digitalRead(limitSwitch)) arm.release();
+  // arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch));
 
   printOdomToLCD();
   //printStorageSupplyToLCD();
@@ -123,20 +123,41 @@ void loop() {
 //     drive.arcadeDrive(0, 0);
 //   }
 
-if(digitalRead(startPort)){
-  if(drive.turnToAngle(90,digitalRead(startPort))){
-      drive.arcadeDrive(0, 0);
-    }
-  //drive.arcadeDrive(0.75, 0);
-  } else {
-    drive.arcadeDrive(0, 0);
-  }
+// if(digitalRead(startPort)){
+//   if(drive.turnToAngle(90,digitalRead(startPort))){
+//       drive.arcadeDrive(0, 0);
+//     }
+//   //drive.arcadeDrive(0.75, 0);
+//   } else {
+//     drive.arcadeDrive(0, 0);
+//   }
+
+bool pressed = digitalRead(startPort);
+
+if(pressed){
+switch(i){
+  case 0:
+  if(drive.driveDistance(12,0, pressed)){ i++; }
+  break;
+  case 1:
+  if(drive.turnToAngle(90, pressed)){ i++; }
+  break;
+  case 2:
+  if(drive.driveDistance(24,90, pressed)){ i++; }
+  break;
+}
+} else {
+  drive.arcadeDrive(0, 0);
+}
 
 // if(digitalRead(startPort)){
 //   drive.arcadeDrive(0.75, 0);
 // } else {
 //   drive.arcadeDrive(0, 0);
 // }
+
+
+
 
   if(!digitalRead(limitSwitch)){
     drive.reset(0,0,0);

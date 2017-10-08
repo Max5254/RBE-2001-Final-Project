@@ -16,7 +16,7 @@ public:
   void initialize();
   void arcadeDrive(double,double);
   bool turnToAngle(double,bool);
-  bool driveDistance(double,bool);
+  bool driveDistance(double,double,bool);
   void driveToPoint(double,double,double);
   void driveToLineAtPoint(double,double);
   void driveToButton();
@@ -41,7 +41,7 @@ private:
   Encoder rightEncoder;
 
 
-  double driveTolerance = 0.125;
+  double driveTolerance = 0.25;
 
   int frcToServo(double);
   bool booleanDelay(bool, unsigned int);
@@ -58,7 +58,7 @@ private:
   double driveNegativeSlewRate = 0.1;
 
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.1, Ki_drive = 0.0, Kd_drive = 0.01;
+  double Kp_drive = 0.1, Ki_drive = 0.001, Kd_drive = 0.01;
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;
@@ -67,9 +67,9 @@ private:
 
   double turnSlewRate = 0.01;
   double turnNegativeSlewRate = 0.5;
-  double turnTolerance = 1;
+  double turnTolerance = 1.5;
   double turnInput, turnOutputDesired, turnOutput, turnSetpoint;
-  double Kp_turn = 0.01, Ki_turn = 0.03, Kd_turn = 0.001;
+  double Kp_turn = 0.015, Ki_turn = 0.02, Kd_turn = 0.001;
   PID turnPID;
 
 };

@@ -13,6 +13,7 @@ Drive::Drive() :
 void Drive::initialize(){
      drivePID.SetOutputLimits(-0.75,0.75);
      drivePID.SetMode(AUTOMATIC);
+     drivePID.setIRange(0.5);
      straightPID.SetOutputLimits(-0.5,0.5);
      straightPID.SetMode(AUTOMATIC);
      turnPID.SetOutputLimits(-0.5,0.5);
@@ -28,14 +29,14 @@ void Drive::initialize(){
 }
 
 
-bool Drive::driveDistance(double setpoint, bool enabled){
+bool Drive::driveDistance(double setpoint, double angle, bool enabled){
 
   driveInput = getY();
   driveSetpoint = setpoint;
   drivePID.Compute();
 
   straightInput = getTheta();
-  straightSetpoint = 0;
+  straightSetpoint = angle;
   straightPID.Compute();
 
   if(enabled){
