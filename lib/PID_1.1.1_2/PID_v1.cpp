@@ -31,6 +31,7 @@ PID::PID(double* Input, double* Output, double* Setpoint,
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
     IRange = 0;
+    dInput = 0;
 
     PID::SetControllerDirection(ControllerDirection);
     PID::SetTunings(Kp, Ki, Kd);
@@ -65,7 +66,7 @@ bool PID::Compute()
     }
 
 
-      double dInput = (input - lastInput);
+       dInput = (input - lastInput);
 
       /*Compute PID Output*/
     double output = kp * error - kd * dInput + ITerm;
@@ -192,6 +193,10 @@ void PID::SetControllerDirection(int Direction)
 
 void PID::setIRange(double range){
   IRange = range;
+}
+
+void PID::flush(){
+  ITerm = lastInput = dInput = 0;
 }
 
 /* Status Funcions*************************************************************

@@ -41,7 +41,7 @@ void Arm::initialize(int _armPort, int _intakePort, int _intakePotPort){
 	mma.setRange(MMA8451_RANGE_2_G);
 	armInput = getArmAngle();
 	intakeInput = analogRead(intakePotPort);
-    
+
     armPID.setIRange(10);
 	// armPID = PID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,AUTOMATIC);
 	// intakePID = PID(&intakeInput,&intakeOutput,&intakeSetpoint,Kp_intake,Ki_intake,Kd_intake,AUTOMATIC);
@@ -103,6 +103,7 @@ bool Arm::lowerArm(){
 
 bool Arm::grab(){
 	intakeSetpoint = INTAKE_IN;
+	Serial.println("Grabbing");
 	return booleanDelay(intakeAtSetpoint(), 500);
 }
 

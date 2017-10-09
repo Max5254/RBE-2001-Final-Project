@@ -4,13 +4,13 @@ Drive::Drive() :
  drivePID(&driveInput,&driveOutputDesired,&driveSetpoint,Kp_drive,Ki_drive,Kd_drive,DIRECT),
  straightPID(&straightInput,&straightOutput,&straightSetpoint,Kp_straight,Ki_straight,Kd_straight,DIRECT),
  turnPID(&turnInput,&turnOutputDesired,&turnSetpoint,Kp_turn,Ki_turn,Kd_turn,DIRECT),
- leftEncoder(leftEncoderA,leftEncoderB),
- rightEncoder(rightEncoderA,rightencoderB),
- odom(0,0,0) {
-
-}
+ odom(0,0,0)
+ { }
 
 void Drive::initialize(){
+     pinMode(limitSwitch,INPUT_PULLUP);
+
+
      drivePID.SetOutputLimits(-0.75,0.75);
      drivePID.SetMode(AUTOMATIC);
      drivePID.setIRange(0.5);
@@ -25,13 +25,20 @@ void Drive::initialize(){
 
      odom.setScale(0.024, 5.4);
 
-     resetEncoders();
+     odom.resetEncoders();
 }
 
 
 bool Drive::driveDistance(double setpoint, double angle, bool enabled){
+  if(driveStarting){
+    driveStartingPoint = odom.getAverageEncoder();
+    driveOutput = 0;
+    drivePID.flush();
+    straightPID.flush();
+    driveStarting = false;
+  }
 
-  driveInput = getY();
+  driveInput = odom.getAverageEncoder() - driveStartingPoint;
   driveSetpoint = setpoint;
   drivePID.Compute();
 
@@ -39,48 +46,101 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
   straightSetpoint = angle;
   straightPID.Compute();
 
+  if (drivePID.getError() > 0) {
+     upSlew = driveSlewRate;
+     downSlew = driveNegativeSlewRate;
+  } else {
+    downSlew = driveSlewRate;
+    upSlew = driveNegativeSlewRate;
+  }
+
   if(enabled){
   if (driveOutputDesired > driveOutput){
-    driveOutput += driveOutputDesired - driveOutput > driveSlewRate ? driveSlewRate : driveOutputDesired - driveOutput;
+    driveOutput += driveOutputDesired - driveOutput > upSlew ? upSlew : driveOutputDesired - driveOutput;
   } else {
-    driveOutput -= driveOutput - driveOutputDesired > driveNegativeSlewRate ? driveNegativeSlewRate : driveOutput - driveOutputDesired;
+    driveOutput -= driveOutput - driveOutputDesired > downSlew ? downSlew : driveOutput - driveOutputDesired;
   }
 } else {
   driveOutput = 0;
 }
   arcadeDrive(driveOutput , straightOutput);
-  // char buff[20];
-  // sprintf(buff,"%.1f %.1f",straightInput, straightOutput);
-  // Serial.println(buff);
-  Serial.print(straightInput);
-  Serial.print(" ");
-  Serial.println(straightOutput);
 
-  return booleanDelay(getY() < setpoint + driveTolerance && getY() > setpoint - driveTolerance,500);;
+  bool done = booleanDelay(abs(drivePID.getError()) < driveTolerance , 500);
 
+  // sprintf(buffer, "IN %f  SET %f\n",driveInput,driveSetpoint );
+  // Serial.print(buffer);
+  // Serial.print(done);
+  // Serial.print(" ");
+  // Serial.print(driveInput);
+  // Serial.print(" ");
+  Serial.println(driveOutput);
+
+  // lcd.setCursor(0,0);
+  // lcd.print(driveInput);
+  // lcd.setCursor(0,1);
+  // lcd.print(driveSetpoint);
+  // lcd.setCursor(6,1);
+  // lcd.print(driveOutput);
+
+  if(done){
+    driveStarting = true;
+    driveStartingPoint = odom.getAverageEncoder();
+    driveOutput = 0;
+  }
+  return done;
 }
+
+bool Drive::driveToLine(double angle){
+  straightInput = getTheta();
+  straightSetpoint = angle;
+  straightPID.Compute();
+
+  arcadeDrive(0.375, straightOutput);
+
+  return analogRead(lineFollowerFrontPort) > lineFollowerTolerance;
+}
+
+bool Drive::turnToLine(bool right){
+  arcadeDrive(0, 0.25 * right ? 1.0 : -1.0);
+
+  return analogRead(lineFollowerBackPort) > lineFollowerTolerance;
+}
+
+bool Drive::driveToButton(double angle){
+  straightInput = getTheta();
+  straightSetpoint = angle;
+  straightPID.Compute();
+
+  arcadeDrive(0.375, straightOutput);
+
+  return !digitalRead(limitSwitch);
+}
+
 
 bool Drive::turnToAngle(double angle, bool enabled){
   turnInput = getTheta();
   turnSetpoint = angle;
   turnPID.Compute();
 
+  if (turnPID.getError() > 0) {
+     upSlew = turnSlewRate;
+     downSlew = turnNegativeSlewRate;
+  } else {
+    downSlew = turnSlewRate;
+    upSlew = turnNegativeSlewRate;
+  }
+
   if(enabled){
   if (turnOutputDesired > turnOutput){
-    turnOutput += turnOutputDesired - turnOutput > turnSlewRate ? turnSlewRate : turnOutputDesired - turnOutput;
+    turnOutput += turnOutputDesired - turnOutput > upSlew ? upSlew : turnOutputDesired - turnOutput;
   } else {
-    turnOutput -= turnOutput - turnOutputDesired > turnNegativeSlewRate ? turnNegativeSlewRate : turnOutput - turnOutputDesired;
+    turnOutput -= turnOutput - turnOutputDesired > downSlew ? downSlew : turnOutput - turnOutputDesired;
   }
   } else {
   turnOutput = 0;
   }
 
   arcadeDrive(0, turnOutput);
-  Serial.print(turnInput);
-  Serial.print(" ");
-  Serial.print(turnSetpoint);
-  Serial.print(" ");
-  Serial.println(turnOutput);
 
   return booleanDelay(abs(turnPID.getError()) < turnTolerance, 500);
 }
@@ -105,17 +165,11 @@ bool Drive::booleanDelay(bool latch, unsigned int delay){
 }
 
 void Drive::odometry(){
-  odom.track(leftEncoder.read(),rightEncoder.read());
+  odom.track();
 }
 
 void Drive::reset(double newX,double newY, double newTheta){
   odom.reset(newX,newY,newTheta);
-  resetEncoders();
-}
-
-void Drive::resetEncoders(){
-  leftEncoder.write(0);
-  rightEncoder.write(0);
 }
 
 double Drive::getX(){return odom.getX();}
