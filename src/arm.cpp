@@ -103,7 +103,7 @@ bool Arm::lowerArm(){
 
 bool Arm::grab(){
 	intakeSetpoint = INTAKE_IN;
-	Serial.println("Grabbing");
+	//Serial.println("Grabbing");
 	return booleanDelay(intakeAtSetpoint(), 500);
 }
 

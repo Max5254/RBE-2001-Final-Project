@@ -60,7 +60,7 @@ void setup() {
 
 
 void printOdomToLCD(){
-  lcd.clear();
+  //lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("X:   Y:   T:");
   //char buffer[16];

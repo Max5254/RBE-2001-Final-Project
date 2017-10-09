@@ -19,11 +19,10 @@ public:
   void arcadeDrive(double,double);
   bool turnToAngle(double,bool);
   bool driveDistance(double,double,bool);
-  bool driveToLine(double);
-  bool turnToLine(bool);
+  bool driveToLine(double, double);
+  bool turnToLine(double);
   bool driveToButton(double);
-  void driveToPoint(double,double,double);
-  void driveToLineAtPoint(double,double);
+  bool driveToPeg(double,double);
   void odometry();
   void reset(double,double,double);
   double getX();
@@ -74,6 +73,15 @@ private:
   double turnInput, turnOutputDesired, turnOutput, turnSetpoint;
   double Kp_turn = 0.015, Ki_turn = 0.02, Kd_turn = 0.001;
   PID turnPID;
+
+  double lineGoal;
+  double lineFindingRange = 3;
+  bool lineStarting = true;
+
+  int pegState = 0;
+  bool pegStarting = true;
+
+  double pegX, pegY, pegDistance, pegAngle,lineAngle;
 
 };
 

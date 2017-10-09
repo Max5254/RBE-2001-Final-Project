@@ -16,7 +16,8 @@ enum tasks{
   RELEASE,
   DRIVE_TO_LINE,
   TURN_TO_LINE,
-  DRIVE_TO_BUTTON
+  DRIVE_TO_BUTTON,
+  DRIVE_TO_PEG
 };
 
 struct task{
@@ -48,9 +49,10 @@ private:
   task makeRelease();
   task makeDriveDistance(double,double);
   task makeTurnAngle(double);
-  task makeDriveToLine(double);
+  task makeDriveToLine(double,double);
   task makeTurnToLine(double);
   task makeDriveToButton(double);
+  task makeDriveToPeg(double,double);
 
   int i;
 

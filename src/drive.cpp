@@ -25,7 +25,7 @@ void Drive::initialize(){
 
      odom.setScale(0.024, 5.4);
 
-     odom.resetEncoders();
+     odom.reset(0,40,0);
 }
 
 
@@ -73,14 +73,7 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
   // Serial.print(" ");
   // Serial.print(driveInput);
   // Serial.print(" ");
-  Serial.println(driveOutput);
-
-  // lcd.setCursor(0,0);
-  // lcd.print(driveInput);
-  // lcd.setCursor(0,1);
-  // lcd.print(driveSetpoint);
-  // lcd.setCursor(6,1);
-  // lcd.print(driveOutput);
+  //Serial.println(driveOutput);
 
   if(done){
     driveStarting = true;
@@ -90,20 +83,31 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
   return done;
 }
 
-bool Drive::driveToLine(double angle){
+bool Drive::driveToLine(double distance, double angle){
+  if(lineStarting){
+    lineGoal = odom.getAverageEncoder() + distance;
+    lineStarting = false;
+  }
+
   straightInput = getTheta();
   straightSetpoint = angle;
   straightPID.Compute();
 
   arcadeDrive(0.375, straightOutput);
 
-  return analogRead(lineFollowerFrontPort) > lineFollowerTolerance;
+  bool done = (analogRead(lineFollowerFrontPort) > lineFollowerTolerance) && (abs(lineGoal - odom.getAverageEncoder()) < lineFindingRange);
+
+  if(done){
+    lineStarting = true;
+  }
+  return done;
 }
 
-bool Drive::turnToLine(bool right){
-  arcadeDrive(0, 0.25 * right ? 1.0 : -1.0);
+bool Drive::turnToLine(double angle){
+  arcadeDrive(0, 0.25 * angle);
 
   return analogRead(lineFollowerBackPort) > lineFollowerTolerance;
+
 }
 
 bool Drive::driveToButton(double angle){
@@ -113,8 +117,68 @@ bool Drive::driveToButton(double angle){
 
   arcadeDrive(0.375, straightOutput);
 
-  return !digitalRead(limitSwitch);
+  return booleanDelay(!digitalRead(limitSwitch),1000);
 }
+
+bool Drive::driveToPeg(double _x, double _y){
+  switch (pegState) {
+    case 0:
+       pegX = odom.getX() - _x;
+       pegY = odom.getY() - _y;
+       pegDistance = sqrt(pegX*pegX+pegY*pegY);
+       pegAngle =  pegX > 0 ? 180 - atan(pegX/pegY)* 57.2958 : atan(pegX/pegY)* 57.2958 - 180;
+
+       //Wrap theta
+       if(pegAngle > 180)
+         pegAngle = pegAngle - 360;
+       if(pegAngle < -180)
+         pegAngle = 360 + pegAngle;
+
+       Serial.print(pegX);
+       Serial.print(" ");
+       Serial.print(pegY);
+       Serial.print(" ");
+       Serial.print(pegDistance);
+       Serial.print(" ");
+       Serial.println(pegAngle);
+      pegState++;
+      break;
+    case 1:
+    if(turnToAngle(pegAngle, true)) {
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+    case 2:
+    if(driveToLine(pegDistance, pegAngle)){
+      pegState++;
+      arcadeDrive(0, 0);
+       lineAngle = (((odom.getTheta() > 0 && odom.getTheta() < 90) || (odom.getTheta() < -90 && odom.getTheta() > -180)) ? 1.0 : -1.0);
+    }
+    break;
+    case 3:
+    if(turnToLine(lineAngle)){
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+    case 4:
+    if(driveToButton(90)){
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+  }
+    bool done = pegState > 4;
+    if(done){
+      pegState = 0;
+    }
+    lcd.setCursor(15, 0);
+    lcd.print(pegState);
+
+    return done;
+  }
+
 
 
 bool Drive::turnToAngle(double angle, bool enabled){
