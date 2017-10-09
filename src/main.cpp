@@ -5,8 +5,7 @@
 #include "drive.h"
 #include "arm.h"
 #include "helpers.h"
-#include <Vector.h>
-
+#include "scheduler.h"
 
 
 LiquidCrystal lcd(40,41,42,43,44,45);
@@ -17,11 +16,9 @@ Messages msg;
 ////////
 
 //Motors
-
 const int armPort = 8;
 const int gripperPort = 9;
 //Digital IO
-
 const int startPort = 22;
 const int beamBreak = 12;
 const int limitSwitch = 13;
@@ -38,59 +35,14 @@ const int lineFollowerBackPort = A0;
 
 Drive drive;
 Arm arm;
-
-bool driveDistance(double a, double b, bool c){
-  return false;
-}
-
-//bool (*functptr[])(double,double,bool)= {&Drive::driveDistance,driveDistance} ;
-
-//Vector<bool(*)(double,double,bool)> vof;
-
-// void addThingy(bool (*function)(double,double,bool))
-// {
-//     vof.push_back(function);
-// }
-
-bool armGrab(double a, double b, bool c){
-  return arm.grab();
-}
-
-bool armRaise(double a, double b, bool c){
-  return arm.raiseArm();
-}
-//using namespace std;
-
-struct task{
-  int function;
-  int distance;
-  int angle;
-};
-
-
-
-Vector< task > arr;
-
-task make_task(int x, int y,int z) {
-    task mytask = {x, y, z};
-    return mytask;
-}
-
-//Vector <int> v ;//{1,2};
+Scheduler scheduler;
 
 ///////////
 // SETUP //
 ///////////
 void setup() {
-  //addThingy(armGrab);
-  //addThingy(armRaise);
-  //int v[] = 1;
-  arr.push_back(make_task(0, 0, 0));
-  arr.push_back(make_task(1, 0, 0));
-  arr.push_back(make_task(2, 0, 0));
 
-
-
+  scheduler.build();
 
   Serial.begin(9600);
   lcd.begin(16,2);
@@ -106,125 +58,8 @@ void setup() {
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
 
- //bool (*fn[])(double, double, bool);
- //static fn funcs[] = {drive.driveDistance, drive.driveDistance};
-
 }
 
-
-int i = 0;
-///////////////
-// MAIN LOOP //
-///////////////
-void loop() {
-    msg.heartbeat();
-    msg.PeriodicRadiationStatus(0x01);
-    drive.odometry();
-
-  // if (!digitalRead(startPort)) arm.raiseArm();
-  // else if (!digitalRead(limitSwitch)) arm.lowerArm();
-  // if (!digitalRead(debugA)) arm.grab();
-  // else if (!digitalRead(debugB)) arm.release();
-  arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) || !digitalRead(debugA) || !digitalRead(debugB));
-
-  bool pressed = digitalRead(startPort);
-  // if(vof[i](0,0,false)){
-  //   i++;
-  // }
-
-switch (arr[i].function) {
-  case 0:
-    if(arm.grab())
-      i++;
-    break;
-  case 1:
-    if(arm.raiseArm())
-      i++;
-    break;
-  case 2:
-    if(arm.release())
-      i++;
-    break;
-}
-
-
-Serial.println(i);
-
-// if(pressed){
-// switch(i){
-//   case 0:
-//   if(arm.grab()){ i++; }
-//   break;
-//   case 1:
-//   if(arm.raiseArm()){ i++; }
-//   break;
-//   case 2:
-//   if(arm.release()){ i++; }
-//   break;
-//   case 3:
-//   if(arm.lowerArm()){ i++; }
-//   break;
-// }
-// } else {
-//   drive.arcadeDrive(0, 0);
-// }
-
-
-  // printOdomToLCD();
-  //printStorageSupplyToLCD();
-  //printIntakeToLCD();
-
-// if(digitalRead(startPort)){
-//   if(drive.driveDistance(12,digitalRead(startPort))){
-//       drive.arcadeDrive(0, 0);
-//     }
-//   //drive.arcadeDrive(0.75, 0);
-//   } else {
-//     drive.arcadeDrive(0, 0);
-//   }
-
-// if(digitalRead(startPort)){
-//   if(drive.turnToAngle(90,digitalRead(startPort))){
-//       drive.arcadeDrive(0, 0);
-//     }
-//   //drive.arcadeDrive(0.75, 0);
-//   } else {
-//     drive.arcadeDrive(0, 0);
-//   }
-
-// bool pressed = digitalRead(startPort);
-
-// if(pressed){
-// switch(i){
-//   case 0:
-//   if(drive.driveDistance(12,0, pressed)){ i++; }
-//   break;
-//   case 1:
-//   if(drive.turnToAngle(90, pressed)){ i++; }
-//   break;
-//   case 2:
-//   if(drive.driveDistance(24,90, pressed)){ i++; }
-//   break;
-// }
-// } else {
-//   drive.arcadeDrive(0, 0);
-// }
-
-// if(digitalRead(startPort)){
-//   drive.arcadeDrive(0.75, 0);
-// } else {
-//   drive.arcadeDrive(0, 0);
-// }
-
-
-
-
-  if(!digitalRead(limitSwitch)){
-    drive.reset(0,0,0);
-  }
-
-  delay(20);
-}
 
 
 void printOdomToLCD(){
@@ -243,15 +78,15 @@ void printOdomToLCD(){
 }
 
 void printStorageSupplyToLCD(){
-lcd.setCursor(0,0);
-bool *storageArray = msg.getStorageAvailability();
-char buffer[20];
-sprintf(buffer,"Storage: %d %d %d %d",storageArray[0],storageArray[1],storageArray[2],storageArray[3]);
-lcd.print(buffer);
-lcd.setCursor(0,1);
-bool *supplyArray = msg.getSupplyAvailability();
-sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
-lcd.print(buffer);
+  lcd.setCursor(0,0);
+  bool *storageArray = msg.getStorageAvailability();
+  char buffer[20];
+  sprintf(buffer,"Storage: %d %d %d %d",storageArray[0],storageArray[1],storageArray[2],storageArray[3]);
+  lcd.print(buffer);
+  lcd.setCursor(0,1);
+  bool *supplyArray = msg.getSupplyAvailability();
+  sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
+  lcd.print(buffer);
 }
 
 void printIntakeToLCD(){
@@ -271,4 +106,39 @@ void printArmToLCD(){
   lcd.print(arm.armOutput);
   lcd.setCursor(8,0);
   lcd.print(arm.armSetpoint);
+}
+
+
+///////////////
+// MAIN LOOP //
+///////////////
+void loop() {
+  msg.heartbeat();
+  msg.PeriodicRadiationStatus(0x01);
+  drive.odometry();
+
+  // if (!digitalRead(startPort)) arm.raiseArm();
+  // else if (!digitalRead(limitSwitch)) arm.lowerArm();
+  // if (!digitalRead(debugA)) arm.grab();
+  // else if (!digitalRead(debugB)) arm.release();
+  //arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) || !digitalRead(debugA) || !digitalRead(debugB));
+
+  bool pressed = digitalRead(startPort);
+
+  if(pressed){
+    //drive.driveDistance(-20, 0, pressed);
+    //drive.turnToAngle(-90, pressed);
+    scheduler.run();
+    arm.updateArm(pressed);
+  } else {
+    drive.arcadeDrive(0,0);
+  }
+  printOdomToLCD();
+
+
+  if(!digitalRead(limitSwitch)){
+    drive.reset(0,0,0);
+  }
+
+  delay(20);
 }

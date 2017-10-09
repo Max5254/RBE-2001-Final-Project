@@ -39,11 +39,19 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
   straightSetpoint = angle;
   straightPID.Compute();
 
+  if (drivePID.getError() > 0) {
+     upSlew = driveSlewRate;
+     downSlew = driveNegativeSlewRate;
+  } else {
+    downSlew = driveSlewRate;
+    upSlew = driveNegativeSlewRate;
+  }
+
   if(enabled){
   if (driveOutputDesired > driveOutput){
-    driveOutput += driveOutputDesired - driveOutput > driveSlewRate ? driveSlewRate : driveOutputDesired - driveOutput;
+    driveOutput += driveOutputDesired - driveOutput > upSlew ? upSlew : driveOutputDesired - driveOutput;
   } else {
-    driveOutput -= driveOutput - driveOutputDesired > driveNegativeSlewRate ? driveNegativeSlewRate : driveOutput - driveOutputDesired;
+    driveOutput -= driveOutput - driveOutputDesired > downSlew ? downSlew : driveOutput - driveOutputDesired;
   }
 } else {
   driveOutput = 0;
@@ -65,22 +73,25 @@ bool Drive::turnToAngle(double angle, bool enabled){
   turnSetpoint = angle;
   turnPID.Compute();
 
+  if (turnPID.getError() > 0) {
+     upSlew = turnSlewRate;
+     downSlew = turnNegativeSlewRate;
+  } else {
+    downSlew = turnSlewRate;
+    upSlew = turnNegativeSlewRate;
+  }
+
   if(enabled){
   if (turnOutputDesired > turnOutput){
-    turnOutput += turnOutputDesired - turnOutput > turnSlewRate ? turnSlewRate : turnOutputDesired - turnOutput;
+    turnOutput += turnOutputDesired - turnOutput > upSlew ? upSlew : turnOutputDesired - turnOutput;
   } else {
-    turnOutput -= turnOutput - turnOutputDesired > turnNegativeSlewRate ? turnNegativeSlewRate : turnOutput - turnOutputDesired;
+    turnOutput -= turnOutput - turnOutputDesired > downSlew ? downSlew : turnOutput - turnOutputDesired;
   }
   } else {
   turnOutput = 0;
   }
 
   arcadeDrive(0, turnOutput);
-  Serial.print(turnInput);
-  Serial.print(" ");
-  Serial.print(turnSetpoint);
-  Serial.print(" ");
-  Serial.println(turnOutput);
 
   return booleanDelay(abs(turnPID.getError()) < turnTolerance, 500);
 }

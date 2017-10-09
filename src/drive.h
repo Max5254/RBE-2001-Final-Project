@@ -56,6 +56,7 @@ private:
 
   double driveSlewRate = 0.01;
   double driveNegativeSlewRate = 0.1;
+  double upSlew,downSlew;
 
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
   double Kp_drive = 0.1, Ki_drive = 0.001, Kd_drive = 0.01;
