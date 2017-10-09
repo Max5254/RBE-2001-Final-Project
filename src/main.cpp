@@ -21,14 +21,12 @@ const int gripperPort = 9;
 //Digital IO
 const int startPort = 22;
 const int beamBreak = 12;
-const int limitSwitch = 13;
 
 const int debugA = 23;
 const int debugB = 24;
 //Analog Input
 const int armPotPort = A2;
-const int lineFollowerFrontPort = A1;
-const int lineFollowerBackPort = A0;
+
 
 
 //Motors
@@ -51,7 +49,6 @@ void setup() {
 
   pinMode(startPort,INPUT_PULLUP);
   pinMode(beamBreak,INPUT_PULLUP);
-  pinMode(limitSwitch,INPUT_PULLUP);
   pinMode(debugA,INPUT_PULLUP);
   pinMode(debugB,INPUT_PULLUP);
 
@@ -129,16 +126,16 @@ void loop() {
     //drive.driveDistance(-20, 0, pressed);
     //drive.turnToAngle(-90, pressed);
     scheduler.run();
-    arm.updateArm(pressed);
   } else {
     drive.arcadeDrive(0,0);
   }
+  arm.updateArm(pressed);
   printOdomToLCD();
 
 
-  if(!digitalRead(limitSwitch)){
-    drive.reset(0,0,0);
-  }
+  // if(!digitalRead(13)){
+  //   drive.reset(0,0,0);
+  // }
 
   delay(20);
 }

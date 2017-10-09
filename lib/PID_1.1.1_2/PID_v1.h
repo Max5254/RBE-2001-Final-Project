@@ -43,6 +43,7 @@ class PID
                                           //   the PID calculation is performed.  default is 100
 
   void setIRange(double);
+  void flush();
 
 
   //Display functions ****************************************************************
@@ -72,7 +73,7 @@ class PID
                                   //   what these values are.  with pointers we'll just know.
 
 	unsigned long lastTime;
-	double ITerm, lastInput;
+	double ITerm, lastInput,dInput;
 
 	unsigned long SampleTime;
 	double outMin, outMax;

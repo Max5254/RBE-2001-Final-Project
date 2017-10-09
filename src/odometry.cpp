@@ -2,7 +2,10 @@
 
 
 
-Odom::Odom(double startX, double startY, double startTheta){
+Odom::Odom(double startX, double startY, double startTheta) :
+leftEncoder(leftEncoderA,leftEncoderB),
+rightEncoder(rightEncoderA,rightencoderB)
+{
   x = startX;
   y = startY;
   theta = startTheta;
@@ -13,8 +16,11 @@ void Odom::setScale(double driveScale, double turnScale){
   this->turnScale = turnScale;
 }
 
-void Odom::track(long leftCount, long rightCount){
+void Odom::track(){
      //Get delta
+     long leftCount = leftEncoder.read();
+     long rightCount = rightEncoder.read();
+
      leftTicks = leftCount - lastLeft;
      rightTicks = rightCount - lastRight;
 
@@ -58,10 +64,20 @@ void Odom::track(long leftCount, long rightCount){
       //x=y=0;
 }
 
+void Odom::resetEncoders(){
+  leftEncoder.write(0);
+  rightEncoder.write(0);
+}
+
 void Odom::reset(double newX,double newY, double newTheta){
   x = newX;
   y = newY;
   theta = newTheta;
+  resetEncoders();
+}
+
+long Odom::getAverageEncoder(){
+  return ((leftEncoder.read() + rightEncoder.read()) / 2) * driveScale;
 }
 
 double Odom::getX(){return x;}

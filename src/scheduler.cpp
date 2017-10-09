@@ -34,13 +34,39 @@ task Scheduler::makeTurnAngle(double _angle){
   return makeTask(TURN_ANGLE,0,_angle);
 }
 
+task Scheduler::makeDriveToLine(double _angle){
+  return makeTask(DRIVE_TO_LINE,0,_angle);
+}
+
+task Scheduler::makeTurnToLine(double _power){
+  return makeTask(TURN_TO_LINE,0,_power);
+}
+
+task Scheduler::makeDriveToButton(double _angle){
+  return makeTask(DRIVE_TO_BUTTON,0,_angle);
+}
+
 void Scheduler::build(){
   schedule.push_back(makeGrab());
   schedule.push_back(makeRaise());
-  schedule.push_back(makeDriveDistance(-20, 0));
-  schedule.push_back(makeTurnAngle(-130));
+  schedule.push_back(makeDriveDistance(-8, 0));
+  schedule.push_back(makeTurnAngle(-160));
+  schedule.push_back(makeDriveDistance(5, -160));
+  schedule.push_back(makeDriveToLine(-160));
+  schedule.push_back(makeTurnToLine(0.5));
+  schedule.push_back(makeDriveToButton(-90));
   schedule.push_back(makeRelease());
-  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveDistance(-10, -90));
+  schedule.push_back(makeTurnAngle(93));
+  schedule.push_back(makeDriveToButton(93));
+  schedule.push_back(makeGrab());
+
+  // schedule.push_back(makeDriveDistance(-30, 0));
+  // schedule.push_back(makeTurnAngle(-90));
+  // schedule.push_back(makeDriveDistance(16, -90));
+  // schedule.push_back(makeRelease());
+  // schedule.push_back(makeDriveDistance(-16, -90));
+  // schedule.push_back(makeLower());
 }
 
 
@@ -72,6 +98,22 @@ bool Scheduler::run(){
         i++;
         drive.arcadeDrive(0, 0); }
       break;
+    case DRIVE_TO_LINE:
+        if(drive.driveToLine(schedule[i].angle)){
+          i++;
+          drive.arcadeDrive(0, 0); }
+        break;
+    case TURN_TO_LINE:
+        if(drive.turnToLine(schedule[i].angle > 0)){
+              i++;
+              drive.arcadeDrive(0, 0); }
+            break;
+    case DRIVE_TO_BUTTON:
+        if(drive.driveToButton(schedule[i].angle)){
+            i++;
+            drive.arcadeDrive(0, 0); }
+        break;
+
   }
   return false;
 }
