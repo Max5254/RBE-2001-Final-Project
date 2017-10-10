@@ -24,6 +24,7 @@ public:
   bool turnToLine(double);
   bool driveToButton(double);
   bool driveToBeamBreak(double);
+  bool driveToPoint(double,double);
   bool driveToPeg(double,double);
   bool driveToReactor(double,double);
   void odometry();
@@ -65,7 +66,7 @@ private:
   long driveStartingPoint;
   bool driveStarting = true;
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.115, Ki_drive = 0.0025, Kd_drive = 0.01;
+  double Kp_drive = 0.12, Ki_drive = 0.003, Kd_drive = 0.01; //.115 .0025
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;
@@ -93,6 +94,9 @@ private:
   int reactorState = 0;
   double reactorX, reactorY, reactorDistance, reactorAngle;
   int bbDirection;
+
+  int pointState = 0;
+  double pointX, pointY, pointDistance, pointAngle;
 
 };
 

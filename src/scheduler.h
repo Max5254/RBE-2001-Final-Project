@@ -20,7 +20,8 @@ enum tasks{
   DRIVE_TO_PEG,
   DRIVE_TO_REACTOR,
   RESET_ODOM_XY,
-  RESET_ODOM_THETA
+  RESET_ODOM_THETA,
+  DRIVE_TO_POINT
 };
 
 struct task{
@@ -53,6 +54,7 @@ private:
   task makeDriveDistance(double,double);
   task makeTurnAngle(double);
   task makeDriveToLine(double,double);
+  task makeDriveToPoint(double,double);
   task makeTurnToLine(double);
   task makeDriveToButton(double);
   task makeDriveToPeg(double,double);

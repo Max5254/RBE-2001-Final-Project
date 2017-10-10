@@ -60,24 +60,35 @@ task Scheduler::makeresetOdomXY(double _x, double _y){
 task Scheduler::makeResetOdomTheta(double _t){
   return makeTask(RESET_ODOM_THETA,0,_t);
 }
+task Scheduler::makeDriveToPoint(double _x, double _y){
+  return makeTask(DRIVE_TO_POINT,_x,_y);
+}
 
 void Scheduler::build(){
   // schedule.push_back(makeGrab());
   // schedule.push_back(makeRaise());
-  // schedule.push_back(makeDriveDistance(-8, 0));
-  // schedule.push_back(makeDriveToPeg(-8, 3));
+  // schedule.push_back(makeDriveDistance(-5, 0));
+  // schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
+  // schedule.push_back(makeRelease());
+  // schedule.push_back(makeResetOdomTheta(-90));
+  // schedule.push_back(makeDriveDistance(-5, -90));
+  //
+  // schedule.push_back(makeDriveToPeg(8, 3)); // old 8,3
+  // schedule.push_back(makeGrab());
+  // schedule.push_back(makeResetOdomTheta(90));
+  // schedule.push_back(makeDriveDistance(-5, 90));
+  //
+  //
+  //
+  // schedule.push_back(makeDriveToReactor(0, 25));
+  // schedule.push_back(makeLower());
   // schedule.push_back(makeRelease());
 
-  schedule.push_back(makeRelease());
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
+  schedule.push_back(makeDriveToPoint(-5, 0));
+  schedule.push_back(makeDriveToReactor(0, -25));
   schedule.push_back(makeGrab());
-  schedule.push_back(makeResetOdomTheta(-90));
-  schedule.push_back(makeDriveDistance(-5, -90));
-  schedule.push_back(makeLower());
-  schedule.push_back(makeDriveToReactor(0, 30));
-  schedule.push_back(makeRelease());
 
 
 
@@ -161,6 +172,10 @@ bool Scheduler::run(){
   case RESET_ODOM_THETA:
         drive.reset(drive.getX(),drive.getY(), schedule[i].angle);
         i++;
+        break;
+  case DRIVE_TO_POINT:
+        if(drive.driveToPoint(schedule[i].distance, schedule[i].angle)){
+        i++; }
         break;
   }
   //Serial.println(schedule[i].function);
