@@ -59,7 +59,26 @@ void setup() {
 
 }
 
-
+int* storageOrder(){
+  bool *storageArray = msg.getStorageAvailability();
+  bool *supplyArray = msg.getSupplyAvailability();
+  int order[4] = {-1,-1,-1,-1};
+  for(int i = 0; i < 4; i++){
+    if(storageArray[i] == 0 && order[0] == -1){
+      order[0] = i;
+    }
+    if(supplyArray[i] == 0 && order[1] == -1){
+      order[1] = i;
+    }
+    if(storageArray[4-i] == 0 && order[2] == -1){
+      order[2] = 4-i;
+    }
+    if(supplyArray[4-i] == 0 && order[3] == -1){
+      order[3] = 4-i;
+    }
+  }
+  return order;
+}
 
 void printOdomToLCD(){
   //lcd.clear();
