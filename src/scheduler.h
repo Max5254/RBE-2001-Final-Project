@@ -17,7 +17,10 @@ enum tasks{
   DRIVE_TO_LINE,
   TURN_TO_LINE,
   DRIVE_TO_BUTTON,
-  DRIVE_TO_PEG
+  DRIVE_TO_PEG,
+  DRIVE_TO_REACTOR,
+  RESET_ODOM_XY,
+  RESET_ODOM_THETA
 };
 
 struct task{
@@ -53,6 +56,10 @@ private:
   task makeTurnToLine(double);
   task makeDriveToButton(double);
   task makeDriveToPeg(double,double);
+  task makeDriveToReactor(double,double);
+  task makeresetOdomXY(double,double);
+  task makeResetOdomTheta(double);
+
 
   int i;
 

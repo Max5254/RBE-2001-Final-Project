@@ -20,9 +20,12 @@ public:
   bool turnToAngle(double,bool);
   bool driveDistance(double,double,bool);
   bool driveToLine(double, double);
+  bool driveToReactorLine(double, double);
   bool turnToLine(double);
   bool driveToButton(double);
+  bool driveToBeamBreak(double);
   bool driveToPeg(double,double);
+  bool driveToReactor(double,double);
   void odometry();
   void reset(double,double,double);
   double getX();
@@ -37,6 +40,8 @@ private:
   Odom odom;
 
   const int limitSwitch = 13;
+  const int beamBreak = 12;
+
 
   double driveTolerance = 0.25;
 
@@ -60,7 +65,7 @@ private:
   long driveStartingPoint;
   bool driveStarting = true;
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.11, Ki_drive = 0.002, Kd_drive = 0.01;
+  double Kp_drive = 0.115, Ki_drive = 0.0025, Kd_drive = 0.01;
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;
@@ -71,17 +76,23 @@ private:
   double turnNegativeSlewRate = 0.5;
   double turnTolerance = 1.5;
   double turnInput, turnOutputDesired, turnOutput, turnSetpoint;
-  double Kp_turn = 0.015, Ki_turn = 0.02, Kd_turn = 0.001;
+  double Kp_turn = 0.014, Ki_turn = 0.02, Kd_turn = 0.003; //old p=0.015, old d=0.001-->0.002
   PID turnPID;
 
   double lineGoal;
-  double lineFindingRange = 3;
+  double lineFindingRange = 4;
+  double reactorlineFindingRange = 10;
   bool lineStarting = true;
 
   int pegState = 0;
   bool pegStarting = true;
 
   double pegX, pegY, pegDistance, pegAngle,lineAngle;
+  int buttonDirection;
+
+  int reactorState = 0;
+  double reactorX, reactorY, reactorDistance, reactorAngle;
+  int bbDirection;
 
 };
 

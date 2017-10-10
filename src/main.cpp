@@ -20,12 +20,15 @@ const int armPort = 8;
 const int gripperPort = 9;
 //Digital IO
 const int startPort = 22;
-const int beamBreak = 12;
 
 const int debugA = 23;
 const int debugB = 24;
 //Analog Input
 const int armPotPort = A2;
+
+bool enabled = false;
+bool lastPressed = true;
+
 
 
 
@@ -48,7 +51,6 @@ void setup() {
 
 
   pinMode(startPort,INPUT_PULLUP);
-  pinMode(beamBreak,INPUT_PULLUP);
   pinMode(debugA,INPUT_PULLUP);
   pinMode(debugB,INPUT_PULLUP);
 
@@ -122,7 +124,12 @@ void loop() {
 
   bool pressed = digitalRead(startPort);
 
-  if(pressed){
+  if(pressed && !lastPressed){
+    enabled = !enabled;
+  }
+  lastPressed = pressed;
+
+  if(enabled){
     //drive.driveDistance(-20, 0, pressed);
     //drive.turnToAngle(-90, pressed);
     scheduler.run();

@@ -5,7 +5,7 @@
 #include "Servo.h"
 #include "helpers.h"
 
-#define ARM_UP 85
+#define ARM_UP 87
 #define ARM_DOWN 0
 #define INTAKE_IN 65
 #define INTAKE_OUT 980

@@ -41,8 +41,8 @@ void Odom::track(){
     //  Serial.print(" ");
 
      //Get theta
-    //theta += (leftTicks - rightTicks) / turnScale;
-    theta = (leftCount - rightCount) / turnScale;
+    theta += (leftTicks - rightTicks) / turnScale;
+    //theta = (leftCount - rightCount) / turnScale;
 
 
     //Wrap theta
@@ -73,6 +73,8 @@ void Odom::reset(double newX,double newY, double newTheta){
   x = newX;
   y = newY;
   theta = newTheta;
+  lastLeft = 0;
+  lastRight = 0;
   resetEncoders();
 }
 

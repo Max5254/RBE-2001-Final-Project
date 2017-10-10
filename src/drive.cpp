@@ -9,6 +9,7 @@ Drive::Drive() :
 
 void Drive::initialize(){
      pinMode(limitSwitch,INPUT_PULLUP);
+     pinMode(beamBreak,INPUT_PULLUP);
 
 
      drivePID.SetOutputLimits(-0.75,0.75);
@@ -89,19 +90,46 @@ bool Drive::driveToLine(double distance, double angle){
     lineStarting = false;
   }
 
+  Serial.print(lineGoal);
+  Serial.print(" ");
+  Serial.println(odom.getAverageEncoder());
   straightInput = getTheta();
   straightSetpoint = angle;
   straightPID.Compute();
 
-  arcadeDrive(0.375, straightOutput);
+  arcadeDrive(0.25, straightOutput);
 
   bool done = (analogRead(lineFollowerFrontPort) > lineFollowerTolerance) && (abs(lineGoal - odom.getAverageEncoder()) < lineFindingRange);
-
   if(done){
     lineStarting = true;
   }
+
   return done;
 }
+
+bool Drive::driveToReactorLine(double distance, double angle){
+  if(lineStarting){
+    lineGoal = odom.getAverageEncoder() + distance;
+    lineStarting = false;
+  }
+
+  Serial.print(lineGoal);
+  Serial.print(" ");
+  Serial.println(odom.getAverageEncoder());
+  straightInput = getTheta();
+  straightSetpoint = angle;
+  straightPID.Compute();
+
+  arcadeDrive(0.25, straightOutput);
+
+  bool done = (analogRead(lineFollowerFrontPort) > lineFollowerTolerance) && (abs(lineGoal - odom.getAverageEncoder()) < reactorlineFindingRange);
+  if(done){
+    lineStarting = true;
+  }
+
+  return done;
+}
+
 
 bool Drive::turnToLine(double angle){
   arcadeDrive(0, 0.25 * angle);
@@ -120,20 +148,33 @@ bool Drive::driveToButton(double angle){
   return booleanDelay(!digitalRead(limitSwitch),1000);
 }
 
+bool Drive::driveToBeamBreak(double angle){
+  straightInput = getTheta();
+  straightSetpoint = angle;
+  straightPID.Compute();
+
+  arcadeDrive(0.375, straightOutput);
+
+  return booleanDelay(!digitalRead(beamBreak),1000);
+}
+
 bool Drive::driveToPeg(double _x, double _y){
   switch (pegState) {
     case 0:
        pegX = odom.getX() - _x;
        pegY = odom.getY() - _y;
        pegDistance = sqrt(pegX*pegX+pegY*pegY);
-       pegAngle =  pegX > 0 ? 180 - atan(pegX/pegY)* 57.2958 : atan(pegX/pegY)* 57.2958 - 180;
+       pegAngle =  pegX < 0 ? 180 - atan(abs(pegX)/abs(pegY))* 57.2958 : atan(pegX/pegY)* 57.2958 - 180;
+      if(_x > 0){
+        buttonDirection = 1;
+      } else {
+        buttonDirection = -1;
+      }
 
-       //Wrap theta
-       if(pegAngle > 180)
-         pegAngle = pegAngle - 360;
-       if(pegAngle < -180)
-         pegAngle = 360 + pegAngle;
-
+      Serial.print(_x);
+      Serial.print(" ");
+      Serial.print(_y);
+      Serial.print(" ");
        Serial.print(pegX);
        Serial.print(" ");
        Serial.print(pegY);
@@ -153,7 +194,7 @@ bool Drive::driveToPeg(double _x, double _y){
     if(driveToLine(pegDistance, pegAngle)){
       pegState++;
       arcadeDrive(0, 0);
-       lineAngle = (((odom.getTheta() > 0 && odom.getTheta() < 90) || (odom.getTheta() < -90 && odom.getTheta() > -180)) ? 1.0 : -1.0);
+      lineAngle = (((odom.getTheta() > 0 && odom.getTheta() < 90) || (odom.getTheta() < -90 && odom.getTheta() > -180)) ? 1.0 : -1.0);
     }
     break;
     case 3:
@@ -163,7 +204,7 @@ bool Drive::driveToPeg(double _x, double _y){
     }
     break;
     case 4:
-    if(driveToButton(90)){
+    if(driveToButton(90 * buttonDirection)){
       pegState++;
       arcadeDrive(0, 0);
     }
@@ -180,6 +221,67 @@ bool Drive::driveToPeg(double _x, double _y){
   }
 
 
+  bool Drive::driveToReactor(double _x, double _y){
+    switch (reactorState) {
+      case 0:
+         reactorX = odom.getX() - _x;
+         reactorY = odom.getY() - _y;
+         reactorDistance = sqrt(reactorX*reactorX+reactorY*reactorY) - 10;
+         reactorAngle =  reactorX < 0 ? atan(abs(reactorX)/abs(reactorY))* 57.2958 : -atan(abs(reactorX)/abs(reactorY))* 57.2958;
+        if(_x > 0){
+          buttonDirection = 1;
+        } else {
+          buttonDirection = 0;
+        }
+
+         Serial.print(_x);
+         Serial.print(" ");
+         Serial.print(_y);
+         Serial.print(" ");
+         Serial.print(reactorX);
+         Serial.print(" ");
+         Serial.print(reactorY);
+         Serial.print(" ");
+         Serial.print(reactorDistance);
+         Serial.print(" ");
+         Serial.println(reactorAngle);
+        reactorState++;
+        break;
+      case 1:
+      if(turnToAngle(reactorAngle, true)) {
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+      case 2:
+      if(driveToReactorLine(reactorDistance, reactorAngle)){
+        reactorState++;
+        arcadeDrive(0, 0);
+        lineAngle = (((odom.getTheta() < 180 && odom.getTheta() > 90) || (odom.getTheta() < 0 && odom.getTheta() > -90)) ? 1.0 : -1.0);
+      }
+      break;
+      case 3:
+      if(turnToLine(lineAngle)){
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+      case 4:
+      if(driveToBeamBreak(180 * buttonDirection)){
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+    }
+      bool done = reactorState > 4;
+      if(done){
+        reactorState = 0;
+      }
+      lcd.setCursor(15, 0);
+      lcd.print(reactorState);
+
+      return done;
+    }
 
 bool Drive::turnToAngle(double angle, bool enabled){
   turnInput = getTheta();
