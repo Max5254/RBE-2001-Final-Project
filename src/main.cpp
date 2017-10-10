@@ -56,10 +56,10 @@ void setup() {
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
 
-  while(msg.isStopped()){
-  msg.read();
-  }
-  msg.buttonStop();
+  // while(msg.isStopped()){
+  // msg.read();
+  // }
+  // msg.buttonStop();
   scheduler.build();
 }
 

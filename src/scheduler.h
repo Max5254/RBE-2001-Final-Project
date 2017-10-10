@@ -77,7 +77,9 @@ private:
   task makeLOW();
   task makeOFF();
 
-
+  unsigned int timeoutTime = 15000;
+  unsigned int startTime;
+  tasks lastState;
   int i;
 
 };
