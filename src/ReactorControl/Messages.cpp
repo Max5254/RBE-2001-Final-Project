@@ -16,7 +16,7 @@ BTComms comms;
  * Note: you cannot call methods that depend on other classes having already been created
  */
 Messages::Messages() {
-	stopped = false;
+	stopped = true;
 }
 
 void Messages::heartbeat(){
@@ -26,11 +26,17 @@ void Messages::heartbeat(){
 	}
 }
 
-void Messages::PeriodicRadiationStatus(char type){
+bool Messages::buttonStop(){
+	stopped = !stopped;
+}
+
+void Messages::PeriodicRadiationStatus(int type){
+	if(type == 1 || type == 2){
 	if (millis() > timeForRadiation) {
-		timeForRadiation = millis() + 2000;
+		timeForRadiation = millis() + 1000;
 		sendRadiationAlert(type);
 	}
+}
 }
 
 /**
@@ -40,14 +46,15 @@ void Messages::PeriodicRadiationStatus(char type){
 * what you are carrying. 0x0 is for nothing, 0x1 is for spent rod, and 0x2 is for new rod.
 * passing in any other hex value will result in no radiation being the alert.
 */
-void Messages::sendRadiationAlert(char type) {
-	if (type & BIT0){
+void Messages::sendRadiationAlert(int type) {
+	if (1){
 		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x2C); //spent rod is exposed
-	} else if (type & BIT1){
+	} else if (2){
 		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0xFF); //new rod is exposed
-	} else {
-		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x00); //no radiation is exposed
 	}
+	// else {
+	// 	comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x00); //no radiation is exposed
+	// }
 }
 
 /**
@@ -145,11 +152,11 @@ bool Messages::read() {
 		case kRadiationAlert:
 			break;
 		case kStopMovement:
-			if (comms.getMessageByte(2) == 0x0B){
+			if (comms.getMessageByte(2) == 0x0B || true){
 				stopped = true;}
 			break;
 		case kResumeMovement:
-		if (comms.getMessageByte(2) == 0x0B){
+		if (comms.getMessageByte(2) == 0x0B || true){
 			stopped = false;}
 			break;
 		case kRobotStatus:

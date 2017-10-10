@@ -41,9 +41,10 @@ public:
 	Messages();
 
 	bool isStopped();
+	bool buttonStop();
 	void sendHeartbeat();
-	void PeriodicRadiationStatus(char type);
-	void sendRadiationAlert(char type);
+	void PeriodicRadiationStatus(int type);
+	void sendRadiationAlert(int type);
 	bool read();
 	void setup();
 	void printMessage();
