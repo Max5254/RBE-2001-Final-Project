@@ -88,7 +88,55 @@ int Scheduler::getRadiation(){
   return radLevel;
 }
 
+int* Scheduler::storageOrder(){
+  bool *storageArray = msg.getStorageAvailability();
+  bool *supplyArray = msg.getSupplyAvailability();
+  Serial.print("Storage: ");
+  Serial.print(storageArray[0]);
+  Serial.print(" ");
+  Serial.print(storageArray[1]);
+  Serial.print(" ");
+  Serial.print(storageArray[2]);
+  Serial.print(" ");
+  Serial.println(storageArray[3]);
+  Serial.print("Supply: ");
+  Serial.print(supplyArray[0]);
+  Serial.print(" ");
+  Serial.print(supplyArray[1]);
+  Serial.print(" ");
+  Serial.print(supplyArray[2]);
+  Serial.print(" ");
+  Serial.println(supplyArray[3]);
+
+  int order[4] = {-1,-1,-1,-1};
+  for(int i = 0; i < 4; i++){
+    if(storageArray[3-i] == 0 && order[0] == -1){
+      order[0] = i;
+    }
+    if(supplyArray[3 - i] == 0 && order[1] == -1){
+      order[1] = 3 - i;
+    }
+    if(storageArray[i] == 0 && order[2] == -1){
+      order[2] = 3-i;
+    }
+    if(supplyArray[i] == 0 && order[3] == -1){
+      order[3] = i;
+    }
+  }
+  Serial.println(order[0]);
+  return order;
+}
+
 void Scheduler::build(){
+  int *pathPlan = storageOrder();
+  Serial.print(int(pathPlan[0]));
+  Serial.print(" ");
+  Serial.print(pathPlan[1]);
+  Serial.print(" ");
+  Serial.print(pathPlan[2]);
+  Serial.print(" ");
+  Serial.println(pathPlan[3]);
+
   schedule.push_back(makeGrab());
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());

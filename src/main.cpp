@@ -56,31 +56,14 @@ void setup() {
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
 
+  while(msg.isStopped()){
   msg.read();
-  scheduler.build();
-
-}
-
-int* storageOrder(){
-  bool *storageArray = msg.getStorageAvailability();
-  bool *supplyArray = msg.getSupplyAvailability();
-  int order[4] = {-1,-1,-1,-1};
-  for(int i = 0; i < 4; i++){
-    if(storageArray[i] == 0 && order[0] == -1){
-      order[0] = i;
-    }
-    if(supplyArray[i] == 0 && order[1] == -1){
-      order[1] = i;
-    }
-    if(storageArray[4-i] == 0 && order[2] == -1){
-      order[2] = 4-i;
-    }
-    if(supplyArray[4-i] == 0 && order[3] == -1){
-      order[3] = 4-i;
-    }
   }
-  return order;
+  msg.buttonStop();
+  scheduler.build();
 }
+
+
 
 void printOdomToLCD(){
   //lcd.clear();
@@ -135,7 +118,7 @@ void printArmToLCD(){
 void loop() {
   msg.read();
   msg.heartbeat();
-  Serial.println(scheduler.getRadiation());
+  //Serial.println(scheduler.getRadiation());
   msg.PeriodicRadiationStatus(scheduler.getRadiation());
   //msg.sendRadiationAlert(0xFF);
   drive.odometry();

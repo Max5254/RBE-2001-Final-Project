@@ -47,9 +47,9 @@ void Messages::PeriodicRadiationStatus(int type){
 * passing in any other hex value will result in no radiation being the alert.
 */
 void Messages::sendRadiationAlert(int type) {
-	if (1){
+	if (type == 1){
 		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0x2C); //spent rod is exposed
-	} else if (2){
+	} else if (type == 2){
 		comms.writeMessage(kRadiationAlert, 0x0B, 0x00, 0xFF); //new rod is exposed
 	}
 	// else {

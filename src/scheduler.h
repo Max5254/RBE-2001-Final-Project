@@ -36,7 +36,7 @@ struct task{
 
 extern Drive drive;
 extern Arm arm;
-extern Messages messages;
+extern Messages msg;
 
 class Scheduler{
 public:
@@ -70,6 +70,8 @@ private:
   task makeDriveToReactor(double,double);
   task makeresetOdomXY(double,double);
   task makeResetOdomTheta(double);
+
+  int* storageOrder();
 
   task makeHIGH();
   task makeLOW();
