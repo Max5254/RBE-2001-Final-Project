@@ -66,7 +66,7 @@ private:
   long driveStartingPoint;
   bool driveStarting = true;
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.12, Ki_drive = 0.003, Kd_drive = 0.01; //.115 .0025
+  double Kp_drive = 0.12, Ki_drive = 0.004, Kd_drive = 0.01; // i .003
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;

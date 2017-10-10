@@ -3,6 +3,17 @@
 Scheduler::Scheduler()
 {
   i = 0;
+  radLevel = 0;
+}
+
+//return true only when a bool has been true for "delay" amount of time
+bool Scheduler::booleanDelay(bool latch, unsigned int delay){
+  if(!latch){
+    lastLatched = millis();
+    return false;
+  } else {
+    return millis() - lastLatched > delay;
+  }
 }
 
 task Scheduler::makeTask(tasks _function, double _x, double _y) {
@@ -64,55 +75,54 @@ task Scheduler::makeDriveToPoint(double _x, double _y){
   return makeTask(DRIVE_TO_POINT,_x,_y);
 }
 
+task Scheduler::makeHIGH(){
+  return makeTask(HIGH_RAD,0,0);
+}
+task Scheduler::makeLOW(){
+  return makeTask(LOW_RAD,0,0);
+}
+task Scheduler::makeOFF(){
+  return makeTask(OFF_RAD,0,0);
+}
+int Scheduler::getRadiation(){
+  return radLevel;
+}
+
 void Scheduler::build(){
-  // schedule.push_back(makeGrab());
-  // schedule.push_back(makeRaise());
-  // schedule.push_back(makeDriveDistance(-5, 0));
-  // schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeResetOdomTheta(-90));
-  // schedule.push_back(makeDriveDistance(-5, -90));
-  //
-  // schedule.push_back(makeDriveToPeg(8, 3)); // old 8,3
-  // schedule.push_back(makeGrab());
-  // schedule.push_back(makeResetOdomTheta(90));
-  // schedule.push_back(makeDriveDistance(-5, 90));
-  //
-  //
-  //
-  // schedule.push_back(makeDriveToReactor(0, 25));
-  // schedule.push_back(makeLower());
-  // schedule.push_back(makeRelease());
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeHIGH());
+  schedule.push_back(makeRaise());
+  schedule.push_back(makeDriveDistance(-5, 0));
+  schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+  schedule.push_back(makeResetOdomTheta(-90));
+  schedule.push_back(makeDriveDistance(-5, -90));
+
+  schedule.push_back(makeDriveToPeg(5, 7)); // old 8,3
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeLOW());
+  schedule.push_back(makeResetOdomTheta(90));
+  schedule.push_back(makeDriveDistance(-5, 90));
+
+  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveToReactor(0, 25));
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
 
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeDriveToPoint(-5, 0));
-  schedule.push_back(makeDriveToReactor(0, -25));
+  schedule.push_back(makeDriveToPoint(-10, -15));
+  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveToReactor(0, -35));
   schedule.push_back(makeGrab());
 
 
-
-  // schedule.push_back(makeTurnAngle(-160));
-  // schedule.push_back(makeDriveDistance(5, -160));
-  // schedule.push_back(makeDriveToLine(10,-160));
-  // schedule.push_back(makeTurnToLine(0.5));
-  // schedule.push_back(makeDriveToButton(-90));
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeDriveDistance(-10, -90));
-  // schedule.push_back(makeTurnAngle(93));
-  // schedule.push_back(makeDriveToButton(93));
-  // schedule.push_back(makeGrab());
-
-  // schedule.push_back(makeDriveDistance(-30, 0));
-  // schedule.push_back(makeTurnAngle(-90));
-  // schedule.push_back(makeDriveDistance(16, -90));
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeDriveDistance(-16, -90));
-  // schedule.push_back(makeLower());
 }
 
 
-bool Scheduler::run(){
+bool Scheduler::run(bool enabled){
+  if(enabled){
   switch (schedule[i].function) {
     case GRAB:
       if(arm.grab()) {
@@ -177,8 +187,31 @@ bool Scheduler::run(){
         if(drive.driveToPoint(schedule[i].distance, schedule[i].angle)){
         i++; }
         break;
+  case HIGH_RAD:
+      radLevel = 1;
+      i++;
+      break;
+  case LOW_RAD:
+      radLevel = 2;
+      i++;
+      break;
+  case OFF_RAD:
+      radLevel = 0;
+      i++;
+      break;
   }
-  //Serial.println(schedule[i].function);
 
+  if(booleanDelay(schedule[i].function == DRIVE_TO_POINT,10000)){
+    i++;
+  }
+
+} else {
+  drive.arcadeDrive(0, 0);
+}
+  lcd.setCursor(2, 0);
+  lcd.print(int(schedule[i].function));
+  //Serial.print(enabled);
+  //Serial.print(" ");
+  //Serial.println(schedule[i].function);
   return false;
 }

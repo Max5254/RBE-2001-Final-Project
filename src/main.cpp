@@ -43,7 +43,6 @@ Scheduler scheduler;
 ///////////
 void setup() {
 
-  scheduler.build();
 
   Serial.begin(9600);
   lcd.begin(16,2);
@@ -57,6 +56,9 @@ void setup() {
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
 
+  msg.read();
+  scheduler.build();
+
 }
 
 
@@ -64,7 +66,7 @@ void setup() {
 void printOdomToLCD(){
   //lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("X:   Y:   T:");
+  //lcd.print("X:   Y:   T:");
   //char buffer[16];
   //sprintf(buffer, "%.1f %.1f %.1f", odom.getX(), odom.getY(),odom.getTheta());
   //lcd.print(buffer);
@@ -112,8 +114,11 @@ void printArmToLCD(){
 // MAIN LOOP //
 ///////////////
 void loop() {
+  msg.read();
   msg.heartbeat();
-  msg.PeriodicRadiationStatus(0x01);
+  Serial.println(scheduler.getRadiation());
+  msg.PeriodicRadiationStatus(scheduler.getRadiation());
+  //msg.sendRadiationAlert(0xFF);
   drive.odometry();
 
   // if (!digitalRead(startPort)) arm.raiseArm();
@@ -124,19 +129,25 @@ void loop() {
 
   bool pressed = digitalRead(startPort);
 
+  // Serial.print(msg.isStopped());
+  // Serial.print(" ");
+  // Serial.println(lastStopped);
+
+
+  if(msg.isStopped()){
+    enabled = false;
+  }
+  if(!msg.isStopped()){
+    enabled = true;
+  }
   if(pressed && !lastPressed){
-    enabled = !enabled;
+    msg.buttonStop();
   }
   lastPressed = pressed;
 
-  if(enabled){
-    //drive.driveDistance(-20, 0, pressed);
-    //drive.turnToAngle(-90, pressed);
-    scheduler.run();
-  } else {
-    drive.arcadeDrive(0,0);
-  }
-  arm.updateArm(pressed);
+
+  scheduler.run(enabled);
+  arm.updateArm(true);
   printOdomToLCD();
 
 
