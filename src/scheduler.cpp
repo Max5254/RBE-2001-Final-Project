@@ -4,6 +4,7 @@ Scheduler::Scheduler()
 {
   i = 0;
   radLevel = 0;
+  //startTime = millis();
 }
 
 //return true only when a bool has been true for "delay" amount of time
@@ -88,6 +89,10 @@ int Scheduler::getRadiation(){
   return radLevel;
 }
 
+int Scheduler::storageCoords(int holder){
+  return (holder * 6 ) - 9;
+}
+
 int* Scheduler::storageOrder(){
   bool *storageArray = msg.getStorageAvailability();
   bool *supplyArray = msg.getSupplyAvailability();
@@ -111,19 +116,26 @@ int* Scheduler::storageOrder(){
   int order[4] = {-1,-1,-1,-1};
   for(int i = 0; i < 4; i++){
     if(storageArray[3-i] == 0 && order[0] == -1){
-      order[0] = i;
+      order[0] = -storageCoords(i);
     }
     if(supplyArray[3 - i] == 0 && order[1] == -1){
-      order[1] = 3 - i;
+      order[1] = storageCoords(3 - i);
     }
     if(storageArray[i] == 0 && order[2] == -1){
-      order[2] = 3-i;
+      order[2] = -storageCoords(3-i);
     }
     if(supplyArray[i] == 0 && order[3] == -1){
-      order[3] = i;
+      order[3] = storageCoords(i);
     }
   }
-  Serial.println(order[0]);
+  Serial.print("Out: ");
+  Serial.print(order[0]);
+  Serial.print(" ");
+  Serial.print(order[1]);
+  Serial.print(" ");
+  Serial.print(order[2]);
+  Serial.print(" ");
+  Serial.println(order[3]);
   return order;
 }
 
@@ -137,17 +149,19 @@ void Scheduler::build(){
   Serial.print(" ");
   Serial.println(pathPlan[3]);
 
+  //double supply1 = static_cast<double>(pathPlan[0]);
+
   schedule.push_back(makeGrab());
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
+  schedule.push_back(makeDriveToPeg(-8, pathPlan[0]));  //old -8,-3
   schedule.push_back(makeRelease());
   schedule.push_back(makeOFF());
   schedule.push_back(makeResetOdomTheta(-90));
   schedule.push_back(makeDriveDistance(-5, -90));
 
-  schedule.push_back(makeDriveToPeg(5, 7)); // old 8,3
+  schedule.push_back(makeDriveToPeg(5, pathPlan[1])); // old 5,7
   schedule.push_back(makeGrab());
   schedule.push_back(makeLOW());
   schedule.push_back(makeResetOdomTheta(90));
@@ -249,13 +263,24 @@ bool Scheduler::run(bool enabled){
       break;
   }
 
-  if(booleanDelay(schedule[i].function == DRIVE_TO_POINT,10000)){
-    i++;
-  }
+ //  if(lastState != schedule[i].function){
+ //    startTime = millis();
+ //   }
+ //
+ //   if(startTime + timeoutTime > millis()){
+ //      i++;
+ //      startTime = millis();
+ //    }
+ //
+ // lastState = schedule[i].function;
 
 } else {
   drive.arcadeDrive(0, 0);
 }
+
+
+
+
   lcd.setCursor(2, 0);
   lcd.print(int(schedule[i].function));
   //Serial.print(enabled);

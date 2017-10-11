@@ -72,6 +72,7 @@ private:
   task makeResetOdomTheta(double);
 
   int* storageOrder();
+  int storageCoords(int);
 
   task makeHIGH();
   task makeLOW();
@@ -79,6 +80,9 @@ private:
 
 
   int i;
+  unsigned int timeoutTime = 15000;
+  unsigned int startTime;
+  tasks lastState;
 
 };
 

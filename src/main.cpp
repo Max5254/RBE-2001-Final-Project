@@ -1,20 +1,24 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
-#include <Adafruit_NeoPixel.h>
 #include "ReactorControl/Messages.h"
 #include "drive.h"
 #include "arm.h"
 #include "helpers.h"
 #include "scheduler.h"
 
+#include "Adafruit_NeoPixel.h"
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
+
 
 LiquidCrystal lcd(40,41,42,43,44,45);
 Messages msg;
 
-#define LED_PIN 23
+#define LED_PIN 24
 #define NUM_PIXELS 4
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 24, NEO_GRB + NEO_KHZ800);
 
 uint32_t RED = strip.Color(255, 0, 0);
 uint32_t GREEN = strip.Color(0, 255, 0);
@@ -44,7 +48,7 @@ const int gripperPort = 9;
 //Digital IO
 const int startPort = 22;
 const int debugA = 23;
-const int debugB = 24;
+//const int debugB = 24;
 //Analog Input
 const int armPotPort = A2;
 
@@ -66,13 +70,14 @@ void setup() {
   lcd.begin(16,2);
   msg.setup();
 
+
   //Neopixel Init
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 
   pinMode(startPort,INPUT_PULLUP);
   pinMode(debugA,INPUT_PULLUP);
-  pinMode(debugB,INPUT_PULLUP);
+  //pinMode(debugB,INPUT_PULLUP);
 
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
@@ -82,6 +87,7 @@ void setup() {
   }
   msg.buttonStop();
   scheduler.build();
+  setLEDs(BLUE);
 }
 
 
@@ -140,18 +146,20 @@ void loop() {
   msg.read();
   msg.heartbeat();
   //Serial.println(scheduler.getRadiation());
-  currentRadiation = scheduler.getRadiation();
-  msg.PeriodicRadiationStatus(currentRadiation);
-  if(currentRadiation != lastRadiation){
-    if(currentRadiation == 1){
-      setLEDs(RED);
-    } else if(currentRadiation == 2){
-      setLEDs(ORANGE);
-    } else {
-      setLEDs(BLUE);
-    }
-  }
-  lastRadiation = currentRadiation;
+
+  // currentRadiation = scheduler.getRadiation();
+  // msg.PeriodicRadiationStatus(currentRadiation);
+  //
+  // if(currentRadiation != lastRadiation){
+  //   if(currentRadiation == 1){
+  //     setLEDs(RED);
+  //   } else if(currentRadiation == 2){
+  //     setLEDs(ORANGE);
+  //   } else {
+  //     setLEDs(BLUE);
+  //   }
+  // }
+  // lastRadiation = currentRadiation;
 
   drive.odometry();
 
