@@ -39,7 +39,9 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
     driveStarting = false;
   }
 
-  straightInput = odom.getTheta() < -150 ? 180 - abs(odom.getTheta()) + 180  : odom.getTheta();
+  straightInput = odom.getTheta() < -170 ? 180 - abs(odom.getTheta()) + 180  : odom.getTheta();
+
+
 
   driveInput = odom.getAverageEncoder() - driveStartingPoint;
   driveSetpoint = setpoint;
@@ -66,6 +68,10 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
   driveOutput = 0;
 }
   arcadeDrive(driveOutput , straightOutput);
+
+  Serial.print(abs(drivePID.getError()));
+  Serial.print(" ");
+  Serial.println(driveTolerance);
 
   bool done = booleanDelay(abs(drivePID.getError()) < driveTolerance , 500);
 
@@ -171,19 +177,63 @@ bool Drive::driveToBeamBreak(double angle){
   return booleanDelay(!digitalRead(beamBreak),1000);
 }
 
+// bool Drive::driveToPoint(double _x, double _y){
+//   switch (pointState) {
+//     case 0:
+//        pointX = odom.getX() - _x;
+//        pointY = odom.getY() - _y;
+//        pointDistance = sqrt(pointX*pointX+pointY*pointY);
+//        //pointAngle =  pointX < 0 ? (_x > 0 ? atan(abs(pointX)/abs(pointY))* 57.2958 : 180 - atan(abs(pointX)/abs(pointY))* 57.2958) : atan(pointX/pointY)* 57.2958 - 180 ; //old - 180 at end
+//        pointAngle = atan(pointX/pointY)* 57.2958 + (pointX > 0 ? -180 :180);
+//
+//        Serial.print(odom.getX());
+//        Serial.print(" ");
+//        Serial.print(odom.getY());
+//        Serial.print(" ");
+//       Serial.print(_x);
+//       Serial.print(" ");
+//       Serial.print(_y);
+//       Serial.print(" ");
+//        Serial.print(pointX);
+//        Serial.print(" ");
+//        Serial.print(pointY);
+//        Serial.print(" ");
+//        Serial.print(pointDistance);
+//        Serial.print(" ");
+//        Serial.println(pointAngle);
+//       pointState++;
+//       break;
+//     case 1:
+//     if(turnToAngle(pointAngle, true)) {
+//       pointState++;
+//       arcadeDrive(0, 0);
+//     }
+//     break;
+//     case 2:
+//     if(driveDistance(pointDistance, pointAngle, true)){
+//       pointState++;
+//       arcadeDrive(0, 0);
+//     }
+//     break;
+//   }
+//     bool done = pointState > 2;
+//     if(done){
+//       pointState = 0;
+//     }
+//     //lcd.setCursor(15, 0);
+//     //lcd.print(pointState);
+//
+//     return done;
+//   }
+
 bool Drive::driveToPoint(double _x, double _y){
   switch (pointState) {
     case 0:
        pointX = odom.getX() - _x;
        pointY = odom.getY() - _y;
        pointDistance = sqrt(pointX*pointX+pointY*pointY);
-       //pointAngle =  pointX < 0 ? (_x > 0 ? atan(abs(pointX)/abs(pointY))* 57.2958 : 180 - atan(abs(pointX)/abs(pointY))* 57.2958) : atan(pointX/pointY)* 57.2958 - 180 ; //old - 180 at end
-       pointAngle = atan(pointX/pointY)* 57.2958 + (pointX > 0 ? -180 :180);
+       pointAngle =  pointX < 0 ? (_x > 0 ? atan(abs(pointX)/abs(pointY))* 57.2958 : 180 - atan(abs(pointX)/abs(pointY))* 57.2958) : atan(pointX/pointY)* 57.2958 - 180 ; //old - 180 at end
 
-       Serial.print(odom.getX());
-       Serial.print(" ");
-       Serial.print(odom.getY());
-       Serial.print(" ");
       Serial.print(_x);
       Serial.print(" ");
       Serial.print(_y);
@@ -214,11 +264,12 @@ bool Drive::driveToPoint(double _x, double _y){
     if(done){
       pointState = 0;
     }
-    //lcd.setCursor(15, 0);
-    //lcd.print(pointState);
+    lcd.setCursor(15, 0);
+    lcd.print(pointState);
 
     return done;
   }
+
 
 
 bool Drive::driveToPeg(double _x, double _y){

@@ -44,7 +44,7 @@ private:
   const int beamBreak = 12;
 
 
-  double driveTolerance = 0.25;
+  double driveTolerance = 0.75;
 
   int frcToServo(double);
   bool booleanDelay(bool, unsigned int);
@@ -66,7 +66,7 @@ private:
   long driveStartingPoint;
   bool driveStarting = true;
   double driveInput, driveOutputDesired, driveOutput, driveSetpoint;
-  double Kp_drive = 0.12, Ki_drive = 0.004, Kd_drive = 0.01; // i .003
+  double Kp_drive = 0.12, Ki_drive = 0.006, Kd_drive = 0.01; // i .004
   PID drivePID;
 
   double straightInput, straightOutputDesired, straightOutput, straightSetpoint;

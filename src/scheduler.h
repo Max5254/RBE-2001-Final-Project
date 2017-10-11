@@ -85,6 +85,7 @@ private:
   unsigned int timeoutTime = 15000;
   unsigned int startTime;
   tasks lastState;
+  int lineSub;
 
 };
 
