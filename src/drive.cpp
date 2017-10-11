@@ -318,7 +318,7 @@ bool Drive::driveToPeg(double _x, double _y){
       }
       break;
       case 4:
-      if(driveToBeamBreak(188 * buttonDirection)){
+      if(driveToBeamBreak(185 * buttonDirection)){
         reactorState++;
         arcadeDrive(0, 0);
       }

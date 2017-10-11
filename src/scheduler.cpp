@@ -4,7 +4,6 @@ Scheduler::Scheduler()
 {
   i = 0;
   radLevel = 0;
-  startTime = millis();
 }
 
 //return true only when a bool has been true for "delay" amount of time
@@ -170,8 +169,8 @@ void Scheduler::build(){
 
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeLower());
   schedule.push_back(makeDriveToPoint(-10, -15));
+  schedule.push_back(makeLower());
   schedule.push_back(makeDriveToReactor(0, -35));
   schedule.push_back(makeGrab());
 
@@ -259,21 +258,13 @@ bool Scheduler::run(bool enabled){
       break;
   }
 
-  if(lastState != schedule[i].function){
-    startTime = millis();
-  }
-
-  if(startTime + timeoutTime > millis()){
+  if(booleanDelay(schedule[i].function == DRIVE_TO_POINT,10000)){
     i++;
   }
 
 } else {
   drive.arcadeDrive(0, 0);
-  startTime = millis();
 }
-
-  lastState = schedule[i].function;
-
   lcd.setCursor(2, 0);
   lcd.print(int(schedule[i].function));
   //Serial.print(enabled);
