@@ -17,6 +17,7 @@ enum tasks{
   DRIVE_TO_LINE,
   TURN_TO_LINE,
   DRIVE_TO_BUTTON,
+  DRIVE_TO_BEAM_BREAK,
   DRIVE_TO_PEG,
   DRIVE_TO_REACTOR,
   RESET_ODOM_XY,
@@ -66,6 +67,7 @@ private:
   task makeDriveToPoint(double,double);
   task makeTurnToLine(double);
   task makeDriveToButton(double);
+  task makeDriveToBeamBreak(double);
   task makeDriveToPeg(double,double);
   task makeDriveToReactor(double,double);
   task makeresetOdomXY(double,double);

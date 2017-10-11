@@ -79,12 +79,14 @@ void setup() {
   pinMode(debugA,INPUT_PULLUP);
   //pinMode(debugB,INPUT_PULLUP);
 
-  drive.initialize();
-  arm.initialize(armPort, gripperPort, armPotPort);
+
 
   while(msg.isStopped()){
   msg.read();
+  msg.heartbeat();
   }
+  drive.initialize();
+  arm.initialize(armPort, gripperPort, armPotPort);
   msg.buttonStop();
   scheduler.build();
   setLEDs(BLUE);
@@ -147,35 +149,23 @@ void loop() {
   msg.heartbeat();
   //Serial.println(scheduler.getRadiation());
 
-  // currentRadiation = scheduler.getRadiation();
-  // msg.PeriodicRadiationStatus(currentRadiation);
-  //
-  // if(currentRadiation != lastRadiation){
-  //   if(currentRadiation == 1){
-  //     setLEDs(RED);
-  //   } else if(currentRadiation == 2){
-  //     setLEDs(ORANGE);
-  //   } else {
-  //     setLEDs(BLUE);
-  //   }
-  // }
-  // lastRadiation = currentRadiation;
+  currentRadiation = scheduler.getRadiation();
+  msg.PeriodicRadiationStatus(currentRadiation);
+
+  if(currentRadiation != lastRadiation){
+    if(currentRadiation == 1){
+      setLEDs(ORANGE);
+    } else if(currentRadiation == 2){
+      setLEDs(RED);
+    } else {
+      setLEDs(BLUE);
+    }
+  }
+  lastRadiation = currentRadiation;
 
   drive.odometry();
 
-
-  // if (!digitalRead(startPort)) arm.raiseArm();
-  // else if (!digitalRead(limitSwitch)) arm.lowerArm();
-  // if (!digitalRead(debugA)) arm.grab();
-  // else if (!digitalRead(debugB)) arm.release();
-  //arm.updateArm(!digitalRead(startPort) || !digitalRead(limitSwitch) || !digitalRead(debugA) || !digitalRead(debugB));
-
   bool pressed = digitalRead(startPort);
-
-  // Serial.print(msg.isStopped());
-  // Serial.print(" ");
-  // Serial.println(lastStopped);
-
 
   if(msg.isStopped()){
     enabled = false;
@@ -191,12 +181,8 @@ void loop() {
 
   scheduler.run(enabled);
   arm.updateArm(true);
-  printOdomToLCD();
+  //printOdomToLCD();
 
-
-  // if(!digitalRead(13)){
-  //   drive.reset(0,0,0);
-  // }
 
   delay(20);
 }

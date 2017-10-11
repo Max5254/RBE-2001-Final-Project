@@ -81,7 +81,7 @@ private:
   PID turnPID;
 
   double lineGoal;
-  double lineFindingRange = 4;
+  double lineFindingRange = 5;   //old 4
   double reactorlineFindingRange = 10;
   bool lineStarting = true;
 

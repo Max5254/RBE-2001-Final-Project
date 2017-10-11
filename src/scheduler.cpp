@@ -57,6 +57,9 @@ task Scheduler::makeTurnToLine(double _power){
 task Scheduler::makeDriveToButton(double _angle){
   return makeTask(DRIVE_TO_BUTTON,0,_angle);
 }
+task Scheduler::makeDriveToBeamBreak(double _angle){
+  return makeTask(DRIVE_TO_BEAM_BREAK,0,_angle);
+}
 
 task Scheduler::makeDriveToPeg(double _x, double _y){
   return makeTask(DRIVE_TO_PEG,_x,_y);
@@ -93,6 +96,20 @@ int Scheduler::storageCoords(int holder){
   return (holder * 6 ) - 9;
 }
 
+// if(storageArray[3-i] == 0 && order[0] == -1){
+//   order[0] = -storageCoords(i);
+// }
+// if(supplyArray[3-i] == 1 && order[1] == -1){
+//   order[1] = storageCoords(3-i);
+// }
+// if(storageArray[i] == 0 && order[2] == -1){
+//   order[2] = -storageCoords(3-i);
+// }
+// if(supplyArray[i] == 1 && order[3] == -1){
+//   order[3] = storageCoords(i);
+// }
+
+
 int* Scheduler::storageOrder(){
   bool *storageArray = msg.getStorageAvailability();
   bool *supplyArray = msg.getSupplyAvailability();
@@ -104,7 +121,7 @@ int* Scheduler::storageOrder(){
   Serial.print(storageArray[2]);
   Serial.print(" ");
   Serial.println(storageArray[3]);
-  Serial.print("Supply: ");
+  Serial.print("Supply:  ");
   Serial.print(supplyArray[0]);
   Serial.print(" ");
   Serial.print(supplyArray[1]);
@@ -118,16 +135,31 @@ int* Scheduler::storageOrder(){
     if(storageArray[3-i] == 0 && order[0] == -1){
       order[0] = -storageCoords(i);
     }
-    if(supplyArray[3 - i] == 0 && order[1] == -1){
-      order[1] = storageCoords(3 - i);
-    }
     if(storageArray[i] == 0 && order[2] == -1){
       order[2] = -storageCoords(3-i);
     }
-    if(supplyArray[i] == 0 && order[3] == -1){
+  }
+  for(int i = 0; i < 4; i++){
+    // if(supplyArray[3-i] == 1 && order[1] == -1 && order[0] != storageCoords(3-i)){
+    //   order[1] = storageCoords(3-i);
+    // }
+    // if(supplyArray[i] == 1 && order[3] == -1 && order[2] != storageCoords(i) && order[1] != storageCoords(i)){
+    //   order[3] = storageCoords(i);
+    // }
+    if(supplyArray[3-i] == 1 && order[1] == -1){
+      order[1] = storageCoords(3-i);
+    }
+    if(supplyArray[i] == 1 && order[3] == -1){
       order[3] = storageCoords(i);
     }
   }
+
+  if(order[0] == order[1] || order[2] == order[3]){
+    int temp = order[1];
+    order[1] = order[3];
+    order[3] = temp;
+  }
+
   Serial.print("Out: ");
   Serial.print(order[0]);
   Serial.print(" ");
@@ -151,33 +183,69 @@ void Scheduler::build(){
 
   //double supply1 = static_cast<double>(pathPlan[0]);
 
+  schedule.push_back(makeDriveToBeamBreak(0));
   schedule.push_back(makeGrab());
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());
-  schedule.push_back(makeDriveDistance(-5, 0));
+  schedule.push_back(makeDriveDistance(-8, 0));
   schedule.push_back(makeDriveToPeg(-8, pathPlan[0]));  //old -8,-3
   schedule.push_back(makeRelease());
   schedule.push_back(makeOFF());
+  //schedule.push_back(makeresetOdomXY(-6.5,pathPlan[0]));
   schedule.push_back(makeResetOdomTheta(-90));
-  schedule.push_back(makeDriveDistance(-5, -90));
+  schedule.push_back(makeDriveDistance(-14, -90));
 
-  schedule.push_back(makeDriveToPeg(5, pathPlan[1])); // old 5,7
+  //Driving to first peg
+  schedule.push_back(makeDriveToPeg(13, pathPlan[1])); // old 5,7
   schedule.push_back(makeGrab());
   schedule.push_back(makeLOW());
   schedule.push_back(makeResetOdomTheta(90));
+  //schedule.push_back(makeresetOdomXY(6.5,pathPlan[1]));
   schedule.push_back(makeDriveDistance(-5, 90));
 
+  //Driving back to reactor 1
   schedule.push_back(makeLower());
   schedule.push_back(makeDriveToReactor(0, 25));
   schedule.push_back(makeRelease());
   schedule.push_back(makeOFF());
 
+  //Driving to reactor 2
+  schedule.push_back(makeDriveDistance(-20, 0));
   schedule.push_back(makeRaise());
-  schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeDriveToPoint(-10, -15));
+  schedule.push_back(makeDriveToPoint(-10, -10));
   schedule.push_back(makeLower());
-  schedule.push_back(makeDriveToReactor(0, -35));
+  schedule.push_back(makeDriveToReactor(0, -30));
+
+  //Drive to deposit 2nd rod in storage
   schedule.push_back(makeGrab());
+  schedule.push_back(makeHIGH());
+  schedule.push_back(makeRaise());
+  schedule.push_back(makeDriveDistance(-8, 180));
+  schedule.push_back(makeDriveToPeg(-7, pathPlan[2]));  //old -8,-3
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+  schedule.push_back(makeResetOdomTheta(-90));
+  schedule.push_back(makeDriveDistance(-5, -90));
+
+  //Driving to pick up last rod
+  schedule.push_back(makeDriveToPeg(3, pathPlan[3])); // old 5,7
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeLOW());
+  schedule.push_back(makeResetOdomTheta(90));
+  schedule.push_back(makeDriveDistance(-5, 90));
+
+  //Driving back to reactor 1
+  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveToReactor(0, -25));
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+
+
+  //Back up
+  schedule.push_back(makeRaise());
+  schedule.push_back(makeDriveDistance(-8, 180));
+
+
 
 
 }
@@ -227,6 +295,11 @@ bool Scheduler::run(bool enabled){
             i++;
             drive.arcadeDrive(0, 0); }
         break;
+    case DRIVE_TO_BEAM_BREAK:
+        if(drive.driveToBeamBreak(schedule[i].angle)){
+          i++;
+          drive.arcadeDrive(0, 0); }
+          break;
     case DRIVE_TO_PEG:
       if(drive.driveToPeg(schedule[i].distance,schedule[i].angle)){
         i++;
