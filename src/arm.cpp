@@ -5,9 +5,9 @@
 #include "Servo.h"
 #include "helpers.h"
 
-#define ARM_UP 87
+#define ARM_UP 85
 #define ARM_DOWN 0
-#define INTAKE_IN 65
+#define INTAKE_IN 60 // old 65
 #define INTAKE_OUT 980
 
 Adafruit_MMA8451 mma = Adafruit_MMA8451();
@@ -92,13 +92,13 @@ bool Arm::raiseArm(){
 	//Returns true when target reached
 	armSetpoint = ARM_UP;
 	armActive = !armAtSetpoint();
-	return booleanDelay(armAtSetpoint(),500);
+	return armDelay(armAtSetpoint(),1000);
 }
 
 bool Arm::lowerArm(){
 	armSetpoint = ARM_DOWN;
 	armActive = !armAtSetpoint();
-	return booleanDelay(armAtSetpoint(), 500);
+	return armDelay(armAtSetpoint(), 1000);
 }
 
 bool Arm::grab(){
@@ -110,4 +110,14 @@ bool Arm::grab(){
 bool Arm::release(){
 	intakeSetpoint = INTAKE_OUT;
 	return booleanDelay(intakeAtSetpoint(), 500);
+}
+
+//return true only when a bool has been true for "delay" amount of time
+bool Arm::armDelay(bool latch, unsigned int delay){
+  if(!latch){
+    lastArmLatched = millis();
+    return false;
+  } else {
+    return millis() - lastArmLatched > delay;
+  }
 }

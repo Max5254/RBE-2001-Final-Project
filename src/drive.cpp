@@ -106,11 +106,11 @@ bool Drive::driveToLine(double distance, double angle){
 
   arcadeDrive(0.25, straightOutput);
 
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(abs(lineGoal - odom.getAverageEncoder()));
-  lcd.setCursor(0, 1);
-  lcd.print(analogRead(lineFollowerFrontPort) > lineFollowerTolerance);
+  //lcd.clear();
+  // lcd.setCursor(0, 0);
+  // lcd.print(abs(lineGoal - odom.getAverageEncoder()));
+  // lcd.setCursor(0, 1);
+  // lcd.print(analogRead(lineFollowerFrontPort) > lineFollowerTolerance);
 
   bool done = (analogRead(lineFollowerFrontPort) > lineFollowerTolerance) && (abs(lineGoal - odom.getAverageEncoder()) < lineFindingRange);
   if(done){
@@ -264,8 +264,8 @@ bool Drive::driveToPoint(double _x, double _y){
     if(done){
       pointState = 0;
     }
-    lcd.setCursor(15, 0);
-    lcd.print(pointState);
+    // lcd.setCursor(15, 0);
+    // lcd.print(pointState);
 
     return done;
   }
@@ -343,8 +343,8 @@ bool Drive::driveToPeg(double _x, double _y){
     if(done){
       pegState = 0;
     }
-    lcd.setCursor(15, 0);
-    lcd.print(pegState);
+    // lcd.setCursor(15, 0);
+    // lcd.print(pegState);
 
     return done;
   }
@@ -406,8 +406,8 @@ bool Drive::driveToPeg(double _x, double _y){
       if(done){
         reactorState = 0;
       }
-      lcd.setCursor(15, 0);
-      lcd.print(reactorState);
+      //lcd.setCursor(15, 0);
+      //lcd.print(reactorState);
 
       return done;
     }

@@ -185,65 +185,65 @@ void Scheduler::build(){
 
   // lineSub = 4;
   schedule.push_back(makeDriveToBeamBreak(0));
-  // schedule.push_back(makeGrab());
-  // schedule.push_back(makeHIGH());
-  // schedule.push_back(makeRaise());
-  // schedule.push_back(makeDriveDistance(-8, 0));
-  // schedule.push_back(makeDriveToPeg(-3, pathPlan[0]));  //old -8,-3
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeOFF());
-  // //schedule.push_back(makeresetOdomXY(-6.5,pathPlan[0]));
-  // schedule.push_back(makeResetOdomTheta(-90));
-  // schedule.push_back(makeDriveDistance(-14, -90));
-  //
-  // //Driving to first peg
-  // lineSub = 7;
-  // schedule.push_back(makeDriveToPeg(13, pathPlan[1])); // old 5,7
-  // schedule.push_back(makeGrab());
-  // schedule.push_back(makeLOW());
-  // schedule.push_back(makeResetOdomTheta(90));
-  // //schedule.push_back(makeresetOdomXY(6.5,pathPlan[1]));
-  // schedule.push_back(makeDriveDistance(-5, 90));
-  //
-  // //Driving back to reactor 1
-  // schedule.push_back(makeLower());
-  // schedule.push_back(makeDriveToReactor(0, 25));
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeOFF());
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeHIGH());
+  schedule.push_back(makeRaise());
+  schedule.push_back(makeDriveDistance(-8, 0));
+  schedule.push_back(makeDriveToPeg(-3, pathPlan[0]));  //old -8,-3
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+  //schedule.push_back(makeresetOdomXY(-6.5,pathPlan[0]));
+  schedule.push_back(makeResetOdomTheta(-90));
+  schedule.push_back(makeDriveDistance(-14, -90));
+
+  //Driving to first peg
+  lineSub = 7;
+  schedule.push_back(makeDriveToPeg(13, pathPlan[1])); // old 5,7
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeLOW());
+  schedule.push_back(makeResetOdomTheta(90));
+  //schedule.push_back(makeresetOdomXY(6.5,pathPlan[1]));
+  schedule.push_back(makeDriveDistance(-5, 90));
+
+  //Driving back to reactor 1
+  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveToReactor(0, 25));
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
 
   //Driving to reactor 2
   schedule.push_back(makeDriveDistance(-20, 0));
   schedule.push_back(makeDriveToPoint(-10, -10));
   schedule.push_back(makeDriveToReactor(0, -30));
 
-  //Drive to deposit 2nd rod in storage
+  // //Drive to deposit 2nd rod in storage
   schedule.push_back(makeGrab());
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-8, 180));
-  schedule.push_back(makeDriveToPeg(-9, pathPlan[2]));  //old -8,-3
-  schedule.push_back(makeRelease());
-  schedule.push_back(makeOFF());
-  schedule.push_back(makeResetOdomTheta(-90));
-  schedule.push_back(makeDriveDistance(-5, -90));
-
-  //Driving to pick up last rod
-  schedule.push_back(makeDriveToPeg(3, pathPlan[3])); // old 5,7
-  schedule.push_back(makeGrab());
-  schedule.push_back(makeLOW());
-  schedule.push_back(makeResetOdomTheta(90));
-  schedule.push_back(makeDriveDistance(-5, 90));
-
-  //Driving back to reactor 1
-  schedule.push_back(makeLower());
-  schedule.push_back(makeDriveToReactor(0, -25));
-  schedule.push_back(makeRelease());
-  schedule.push_back(makeOFF());
-
-
-  //Back up
-  schedule.push_back(makeRaise());
-  schedule.push_back(makeDriveDistance(-8, 180));
+  // schedule.push_back(makeDriveToPeg(-9, pathPlan[2]));  //old -8,-3
+  // schedule.push_back(makeRelease());
+  // schedule.push_back(makeOFF());
+  // schedule.push_back(makeResetOdomTheta(-90));
+  // schedule.push_back(makeDriveDistance(-5, -90));
+  //
+  // //Driving to pick up last rod
+  // schedule.push_back(makeDriveToPeg(3, pathPlan[3])); // old 5,7
+  // schedule.push_back(makeGrab());
+  // schedule.push_back(makeLOW());
+  // schedule.push_back(makeResetOdomTheta(90));
+  // schedule.push_back(makeDriveDistance(-5, 90));
+  //
+  // //Driving back to reactor 1
+  // schedule.push_back(makeLower());
+  // schedule.push_back(makeDriveToReactor(0, -25));
+  // schedule.push_back(makeRelease());
+  // schedule.push_back(makeOFF());
+  //
+  //
+  // //Back up
+  // schedule.push_back(makeRaise());
+  // schedule.push_back(makeDriveDistance(-8, 180));
 
 
 

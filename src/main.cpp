@@ -182,6 +182,7 @@ void loop() {
   scheduler.run(enabled);
   arm.updateArm(true);
   //printOdomToLCD();
+  printArmToLCD();
 
 
   delay(20);
