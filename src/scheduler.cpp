@@ -89,6 +89,10 @@ int Scheduler::getRadiation(){
   return radLevel;
 }
 
+int Scheduler::storageCoords(int holder){
+  return (holder * 6 ) - 9;
+}
+
 int* Scheduler::storageOrder(){
   bool *storageArray = msg.getStorageAvailability();
   bool *supplyArray = msg.getSupplyAvailability();
@@ -112,18 +116,23 @@ int* Scheduler::storageOrder(){
   int order[4] = {-1,-1,-1,-1};
   for(int i = 0; i < 4; i++){
     if(storageArray[3-i] == 0 && order[0] == -1){
-      order[0] = i;
+      order[0] = storageCoords(i);
     }
     if(supplyArray[3 - i] == 0 && order[1] == -1){
-      order[1] = 3 - i;
+      order[1] = storageCoords(3 - i);
     }
     if(storageArray[i] == 0 && order[2] == -1){
-      order[2] = 3-i;
+      order[2] = storageCoords(3-i);
     }
     if(supplyArray[i] == 0 && order[3] == -1){
-      order[3] = i;
+      order[3] = storageCoords(i);
     }
   }
+  // if (order[0] == order[2] || order[1] == order[3]){
+  //   int temp = order[0];
+  //   order[0] = order[2];
+  //   order[2] = temp;
+  // }
   Serial.println(order[0]);
   return order;
 }
@@ -142,13 +151,13 @@ void Scheduler::build(){
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-5, 0));
-  schedule.push_back(makeDriveToPeg(-8, -3));  //old positive
+  schedule.push_back(makeDriveToPeg(-8, pathPlan[0]));  //old positive
   schedule.push_back(makeRelease());
   schedule.push_back(makeOFF());
   schedule.push_back(makeResetOdomTheta(-90));
   schedule.push_back(makeDriveDistance(-5, -90));
 
-  schedule.push_back(makeDriveToPeg(5, 7)); // old 8,3
+  schedule.push_back(makeDriveToPeg(5, pathPlan[1])); // old 8,3
   schedule.push_back(makeGrab());
   schedule.push_back(makeLOW());
   schedule.push_back(makeResetOdomTheta(90));

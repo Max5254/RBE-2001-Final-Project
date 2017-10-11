@@ -72,6 +72,7 @@ private:
   task makeResetOdomTheta(double);
 
   int* storageOrder();
+  int storageCoords(int holder);
 
   task makeHIGH();
   task makeLOW();
