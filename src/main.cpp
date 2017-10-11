@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
+#include <Adafruit_NeoPixel.h>
 #include "ReactorControl/Messages.h"
 #include "drive.h"
 #include "arm.h"
@@ -11,6 +12,28 @@
 LiquidCrystal lcd(40,41,42,43,44,45);
 Messages msg;
 
+#define LED_PIN 23
+#define NUM_PIXELS 4
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+uint32_t RED = strip.Color(255, 0, 0);
+uint32_t GREEN = strip.Color(0, 255, 0);
+uint32_t BLUE = strip.Color(0, 0, 255);
+uint32_t YELLOW = strip.Color(255, 200, 0);
+uint32_t PURPLE = strip.Color(200, 0, 200);
+uint32_t ORANGE = strip.Color(255, 100, 0);
+uint32_t NO_COLOR = strip.Color(0, 0, 0);
+
+void setLEDs(uint32_t color){
+  strip.setPixelColor(0,color);
+  strip.setPixelColor(1,color);
+  strip.setPixelColor(2,color);
+  strip.setPixelColor(3,color);
+  strip.show();
+}
+
+int lastRadiation, currentRadiation = 0;
+
 ////////
 // IO //
 ////////
@@ -20,7 +43,6 @@ const int armPort = 8;
 const int gripperPort = 9;
 //Digital IO
 const int startPort = 22;
-
 const int debugA = 23;
 const int debugB = 24;
 //Analog Input
@@ -29,10 +51,6 @@ const int armPotPort = A2;
 bool enabled = false;
 bool lastPressed = true;
 
-
-
-
-//Motors
 
 Drive drive;
 Arm arm;
@@ -48,6 +66,9 @@ void setup() {
   lcd.begin(16,2);
   msg.setup();
 
+  //Neopixel Init
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
 
   pinMode(startPort,INPUT_PULLUP);
   pinMode(debugA,INPUT_PULLUP);
@@ -119,9 +140,21 @@ void loop() {
   msg.read();
   msg.heartbeat();
   //Serial.println(scheduler.getRadiation());
-  msg.PeriodicRadiationStatus(scheduler.getRadiation());
-  //msg.sendRadiationAlert(0xFF);
+  currentRadiation = scheduler.getRadiation();
+  msg.PeriodicRadiationStatus(currentRadiation);
+  if(currentRadiation != lastRadiation){
+    if(currentRadiation == 1){
+      setLEDs(RED);
+    } else if(currentRadiation == 2){
+      setLEDs(ORANGE);
+    } else {
+      setLEDs(BLUE);
+    }
+  }
+  lastRadiation = currentRadiation;
+
   drive.odometry();
+
 
   // if (!digitalRead(startPort)) arm.raiseArm();
   // else if (!digitalRead(limitSwitch)) arm.lowerArm();
