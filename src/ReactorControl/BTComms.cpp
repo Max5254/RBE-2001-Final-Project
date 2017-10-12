@@ -32,16 +32,7 @@ void BTComms::setup() {
  * the number of parameters they have. Be sure that the new function adjusts the length,
  * and writes the extra byte to the bluetooth interface and includes it in the checksum
  * calculation.
- */void BTComms::writeMessage(unsigned char opcode, unsigned char source, unsigned char dest, unsigned char data) {
-  Serial3.write(kMessageStart);
-  Serial3.write(6);
-  Serial3.write(opcode);
-  Serial3.write(source);
-  Serial3.write(dest);
-	Serial3.write(data);
-  Serial3.write(0xff - (opcode + source + dest + data + 5));
-}
-
+ */
 void BTComms::writeMessage(unsigned char opcode, unsigned char source, unsigned char dest) {
  Serial3.write(kMessageStart);
  Serial3.write(5);
@@ -50,6 +41,18 @@ void BTComms::writeMessage(unsigned char opcode, unsigned char source, unsigned 
  Serial3.write(dest);
  Serial3.write(0xff - (opcode + source + dest + 5));
 }
+
+//version that includes data byte for sending radiation alerts
+void BTComms::writeMessage(unsigned char opcode, unsigned char source, unsigned char dest, unsigned char data) {
+ Serial3.write(kMessageStart);
+ Serial3.write(6);
+ Serial3.write(opcode);
+ Serial3.write(source);
+ Serial3.write(dest);
+ Serial3.write(data);
+ Serial3.write(0xff - (opcode + source + dest + data + 5));
+}
+
 
 /**
  * Get the length of the currently received message

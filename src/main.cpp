@@ -12,7 +12,6 @@
   #include <avr/power.h>
 #endif
 
-
 LiquidCrystal lcd(40,41,42,43,44,45);
 Messages msg;
 
@@ -20,6 +19,7 @@ Messages msg;
 #define NUM_PIXELS 4
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 24, NEO_GRB + NEO_KHZ800);
 
+//color constants
 uint32_t RED = strip.Color(255, 0, 0);
 uint32_t GREEN = strip.Color(0, 255, 0);
 uint32_t BLUE = strip.Color(0, 0, 255);
@@ -28,7 +28,7 @@ uint32_t PURPLE = strip.Color(200, 0, 200);
 uint32_t ORANGE = strip.Color(255, 100, 0);
 uint32_t NO_COLOR = strip.Color(0, 0, 0);
 
-void setLEDs(uint32_t color){
+void setLEDs(uint32_t color){ //set all 4 LEDs to specific color
   strip.setPixelColor(0,color);
   strip.setPixelColor(1,color);
   strip.setPixelColor(2,color);
@@ -47,14 +47,11 @@ const int armPort = 8;
 const int gripperPort = 9;
 //Digital IO
 const int startPort = 22;
-const int debugA = 23;
-//const int debugB = 24;
 //Analog Input
 const int armPotPort = A2;
 
 bool enabled = false;
 bool lastPressed = true;
-
 
 Drive drive;
 Arm arm;
@@ -64,43 +61,33 @@ Scheduler scheduler;
 // SETUP //
 ///////////
 void setup() {
-
-
   Serial.begin(9600);
   lcd.begin(16,2);
   msg.setup();
-
 
   //Neopixel Init
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 
   pinMode(startPort,INPUT_PULLUP);
-  pinMode(debugA,INPUT_PULLUP);
-  //pinMode(debugB,INPUT_PULLUP);
 
-
-
-  while(msg.isStopped()){
-  msg.read();
-  msg.heartbeat();
+  setLEDs(PURPLE);
+  while(msg.isStopped()){ //wait for you to enter pegs into BT
+    msg.read();
+    msg.heartbeat();
   }
+
+  //init rest of robot
   drive.initialize();
   arm.initialize(armPort, gripperPort, armPotPort);
   msg.buttonStop();
   scheduler.build();
-  setLEDs(BLUE);
+  setLEDs(GREEN);
 }
 
 
 
 void printOdomToLCD(){
-  //lcd.clear();
-  lcd.setCursor(0,0);
-  //lcd.print("X:   Y:   T:");
-  //char buffer[16];
-  //sprintf(buffer, "%.1f %.1f %.1f", odom.getX(), odom.getY(),odom.getTheta());
-  //lcd.print(buffer);
   lcd.setCursor(0, 1);
   lcd.print(drive.getX());
   lcd.setCursor(6, 1);
@@ -140,19 +127,16 @@ void printArmToLCD(){
   lcd.print(arm.armSetpoint);
 }
 
-
 ///////////////
 // MAIN LOOP //
 ///////////////
 void loop() {
-  msg.read();
-  msg.heartbeat();
-  //Serial.println(scheduler.getRadiation());
-
+  msg.read(); //read BT for stop messages
+  msg.heartbeat(); //send hearbeat periodically
   currentRadiation = scheduler.getRadiation();
-  msg.PeriodicRadiationStatus(currentRadiation);
+  msg.PeriodicRadiationStatus(currentRadiation); //send radiation alert periodically
 
-  if(currentRadiation != lastRadiation){
+  if(currentRadiation != lastRadiation){ //if new status of radiation update leds
     if(currentRadiation == 1){
       setLEDs(ORANGE);
     } else if(currentRadiation == 2){
@@ -163,27 +147,22 @@ void loop() {
   }
   lastRadiation = currentRadiation;
 
-  drive.odometry();
+  drive.odometry(); //calculate position
 
+  //checks to see if robot should be running
+  enabled = !msg.isStopped(); //sets if robot should be running
   bool pressed = digitalRead(startPort);
-
-  if(msg.isStopped()){
-    enabled = false;
-  }
-  if(!msg.isStopped()){
-    enabled = true;
-  }
   if(pressed && !lastPressed){
     msg.buttonStop();
   }
   lastPressed = pressed;
 
-
+  //runs state machine and updates arm
   scheduler.run(enabled);
   arm.updateArm(true);
+
   //printOdomToLCD();
   printArmToLCD();
-
 
   delay(20);
 }

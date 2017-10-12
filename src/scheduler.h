@@ -7,7 +7,7 @@
 #include <Vector.h>
 
 
-enum tasks{
+enum tasks{ //all possible robot states
   DRIVE_DISTANCE,
   TURN_ANGLE,
   RAISE_ARM,
@@ -28,13 +28,15 @@ enum tasks{
   OFF_RAD
 };
 
+//structure to hold desired function and their parameters
+//used for the array of tasks
 struct task{
   tasks function;
   double distance;
   double angle;
 };
 
-
+//link to objects in main.cpp
 extern Drive drive;
 extern Arm arm;
 extern Messages msg;
@@ -44,13 +46,13 @@ public:
   Scheduler();
   void build();
   bool run(bool);
-
   int getRadiation();
 
 private:
 
   char radLevel;
 
+  //create a dynamic array of task to hold the desired robot states
   Vector< task > schedule;
 
   bool booleanDelay(bool,unsigned int);
@@ -74,16 +76,13 @@ private:
   task makeResetOdomTheta(double);
 
   int* storageOrder();
-  int storageCoords(int);
+  int rodCoords(int);
 
   task makeHIGH();
   task makeLOW();
   task makeOFF();
 
-
   int i;
-  unsigned int timeoutTime = 15000;
-  unsigned int startTime;
   tasks lastState;
   int lineSub;
 

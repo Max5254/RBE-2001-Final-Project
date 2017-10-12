@@ -19,6 +19,7 @@ Messages::Messages() {
 	stopped = true;
 }
 
+//Send heartbeat message every 1 second 
 void Messages::heartbeat(){
 	if (millis() > timeForHeartbeat) {
 		timeForHeartbeat = millis() + 1000;
@@ -26,10 +27,17 @@ void Messages::heartbeat(){
 	}
 }
 
+//Switch robot stopped state if button is hit
 bool Messages::buttonStop(){
 	stopped = !stopped;
 }
 
+/*Send radiation status every 1 second
+*   1 for spent rod
+*   2 for new rod
+*   none else
+*
+*/
 void Messages::PeriodicRadiationStatus(int type){
 	if(type == 1 || type == 2){
 	if (millis() > timeForRadiation) {
@@ -43,7 +51,7 @@ void Messages::PeriodicRadiationStatus(int type){
 * Send a radiation alert message to the field to let it know what type of radiation it
 * is carrying. this should be called by your robot program whenever it is carrying
 * radiation or if it not carrying radiation. you must pass in a hex value to specify
-* what you are carrying. 0x0 is for nothing, 0x1 is for spent rod, and 0x2 is for new rod.
+* what you are carrying. 1 is for spent rod, and 2 is for new rod.
 * passing in any other hex value will result in no radiation being the alert.
 */
 void Messages::sendRadiationAlert(int type) {
@@ -106,7 +114,7 @@ bool* Messages::getSupplyAvailability() {
 	return supplyArray;
 }
 
-/*
+/* Example output from app
 1 0 0 1 F7
 2 0 0 0 F7
 1 0 0 1 F7
@@ -152,11 +160,11 @@ bool Messages::read() {
 		case kRadiationAlert:
 			break;
 		case kStopMovement:
-			if (comms.getMessageByte(2) == 0x0B || true){
+			if (comms.getMessageByte(2) == 0x0B || true){ //Checks for team number if you remove || true
 				stopped = true;}
 			break;
 		case kResumeMovement:
-		if (comms.getMessageByte(2) == 0x0B || true){
+		if (comms.getMessageByte(2) == 0x0B || true){ //Checks for team number if you remove || true
 			stopped = false;}
 			break;
 		case kRobotStatus:

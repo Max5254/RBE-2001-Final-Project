@@ -1,32 +1,23 @@
-/*
-
-*/
-
 #ifndef odometry_h
 #define odometry_h
 
 #include "Arduino.h"
 #include "Encoder.h"
 
-class Odom
-{
+class Odom {
 public:
   Odom(double,double,double);
   void setScale(double,double);
   void track();
   void resetEncoders();
 
-
   void reset(double,double,double);
   long getAverageEncoder();
   double getX();
   double getY();
   double getTheta();
-
-
+  
 private:
-
-
   //Encoders
   const int leftEncoderA = 18;
   const int leftEncoderB = 19;

@@ -7,10 +7,10 @@
 
 #define ARM_UP 85
 #define ARM_DOWN 0
-#define INTAKE_IN 60 // old 65
+#define INTAKE_IN 60
 #define INTAKE_OUT 980
 
-Adafruit_MMA8451 mma = Adafruit_MMA8451();
+Adafruit_MMA8451 mma = Adafruit_MMA8451(); //accelerometer
 
 Arm::Arm() :
 armPID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,REVERSE),
@@ -35,6 +35,8 @@ void Arm::initialize(int _armPort, int _intakePort, int _intakePotPort){
 	armPID.SetMode(AUTOMATIC);
 	intakePID.SetMode(AUTOMATIC);
 
+	armPID.setIRange(10);
+
 	if (! mma.begin()) {
     	Serial.println("Couldn't start accelerometer");
   	}
@@ -42,11 +44,9 @@ void Arm::initialize(int _armPort, int _intakePort, int _intakePotPort){
 	armInput = getArmAngle();
 	intakeInput = analogRead(intakePotPort);
 
-    armPID.setIRange(10);
-	// armPID = PID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,AUTOMATIC);
-	// intakePID = PID(&intakeInput,&intakeOutput,&intakeSetpoint,Kp_intake,Ki_intake,Kd_intake,AUTOMATIC);
-}
+	}
 
+//calculates arm angle using acceleration due to gravity (and tries to ignore the arm moving)
 double Arm::getArmAngle(){
 	mma.read();
 	sensors_event_t event;
@@ -56,8 +56,8 @@ double Arm::getArmAngle(){
 	return ang;
 }
 
+//Update lift control loops (called every loop)
 void Arm::updateArm(bool enabled){
-	//Update lift control loops
 	armInput = getArmAngle();
 	armPID.Compute();
 	if (armActive  && enabled) {
@@ -66,7 +66,6 @@ void Arm::updateArm(bool enabled){
 	else {
 		armMotor.write(90);
 	}
-
 
 	//Update intake contol loops
 	intakeInput = analogRead(intakePotPort);
@@ -87,26 +86,25 @@ bool Arm::armAtSetpoint(){
 	return abs(armInput - armSetpoint) < armThreshold;
 }
 
+//Lifts arm - Returns true when target reached
 bool Arm::raiseArm(){
-	//Lifts arm
-	//Returns true when target reached
 	armSetpoint = ARM_UP;
 	armActive = !armAtSetpoint();
 	return armDelay(armAtSetpoint(),1000);
 }
-
+//Lowers arm - Returns true when target reached
 bool Arm::lowerArm(){
 	armSetpoint = ARM_DOWN;
 	armActive = !armAtSetpoint();
 	return armDelay(armAtSetpoint(), 1000);
 }
-
+//Intakes four bar - Returns true when target reached
 bool Arm::grab(){
 	intakeSetpoint = INTAKE_IN;
 	//Serial.println("Grabbing");
 	return booleanDelay(intakeAtSetpoint(), 500);
 }
-
+//Releases four bar - Returns true when target reached
 bool Arm::release(){
 	intakeSetpoint = INTAKE_OUT;
 	return booleanDelay(intakeAtSetpoint(), 500);

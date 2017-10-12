@@ -11,57 +11,40 @@ rightEncoder(rightEncoderA,rightencoderB)
   theta = startTheta;
 }
 
-void Odom::setScale(double driveScale, double turnScale){
-  this->driveScale = driveScale;
-  this->turnScale = turnScale;
+//set scales to convert from tics to inches
+void Odom::setScale(double _driveScale, double _turnScale){
+  driveScale = _driveScale;
+  turnScale = _turnScale;
 }
 
 void Odom::track(){
-     //Get delta
-     long leftCount = leftEncoder.read();
-     long rightCount = rightEncoder.read();
+  //Get delta
+  long leftCount = leftEncoder.read();
+  long rightCount = rightEncoder.read();
 
-     leftTicks = leftCount - lastLeft;
-     rightTicks = rightCount - lastRight;
+  leftTicks = leftCount - lastLeft;
+  rightTicks = rightCount - lastRight;
 
-     //Save last vals
-     lastLeft = leftCount;
-     lastRight = rightCount;
+  //Save last values
+  lastLeft = leftCount;
+  lastRight = rightCount;
+  //scale to inches
+  leftIn = leftTicks * driveScale;
+  rightIn = rightTicks * driveScale;
+  //get average
+  avgIn = (leftIn + rightIn) / 2.0;
+  //Get theta
+  theta += (leftTicks - rightTicks) / turnScale;
 
-     leftIn = leftTicks * driveScale;
-     rightIn = rightTicks * driveScale;
+  //Wrap theta
+  if(theta > 180)
+  theta = theta - 360;
+  if(theta < -180)
+  theta = 360 + theta;
 
-     avgIn = (leftIn + rightIn) / 2.0;
-
-    //  Serial.print(leftIn);
-    //  Serial.print(" ");
-    //  Serial.print(rightIn);
-    //  Serial.print(" ");
-    //  Serial.print(avgIn);
-    //  Serial.print(" ");
-
-     //Get theta
-    theta += (leftTicks - rightTicks) / turnScale;
-    //theta = (leftCount - rightCount) / turnScale;
-
-
-    //Wrap theta
-    if(theta > 180)
-      theta = theta - 360;
-    if(theta < -180)
-      theta = 360 + theta;
-
-      //Do the odom math
-      y += avgIn * cos((theta * 3.14) / 180);
-      x += avgIn * sin((theta * 3.14) / 180);
-
-      // Serial.print(theta);
-      // Serial.print(" ");
-      // Serial.print(cos((theta * 3.14) / 180));
-      // Serial.print(" ");
-      // Serial.print(sin((theta * 3.14) / 180));
-      // Serial.println(" ");
-      //x=y=0;
+  //add new componets
+  y += avgIn * cos((theta * 3.14) / 180);
+  x += avgIn * sin((theta * 3.14) / 180);
 }
 
 void Odom::resetEncoders(){
@@ -69,6 +52,7 @@ void Odom::resetEncoders(){
   rightEncoder.write(0);
 }
 
+//Reset to new location
 void Odom::reset(double newX,double newY, double newTheta){
   x = newX;
   y = newY;

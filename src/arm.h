@@ -4,9 +4,6 @@
 #include <PID_v1.h>
 #include "Servo.h"
 
-// double armInput, armOutput, armSetpoint;
-// PID armPID(&armInput,&armOutput,&armSetpoint,Kp_arm,Ki_arm,Kd_arm,false);
-
 class Arm {
 public:
 	Arm();
