@@ -20,6 +20,8 @@ enum tasks{ //all possible robot states
   DRIVE_TO_BEAM_BREAK,
   DRIVE_TO_PEG,
   DRIVE_TO_REACTOR,
+  DRIVE_TO_PEG_REVERSED,
+  DRIVE_TO_REACTOR_REVERSED,
   RESET_ODOM_XY,
   RESET_ODOM_THETA,
   DRIVE_TO_POINT,
@@ -72,6 +74,8 @@ private:
   task makeDriveToBeamBreak(double);
   task makeDriveToPeg(double,double);
   task makeDriveToReactor(double,double);
+  task makeDriveToPegReversed(double,double);
+  task makeDriveToReactorReversed(double,double);
   task makeresetOdomXY(double,double);
   task makeResetOdomTheta(double);
 

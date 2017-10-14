@@ -6,8 +6,8 @@
 #include "helpers.h"
 
 #define ARM_UP 85
-#define ARM_DOWN 0
-#define INTAKE_IN 60
+#define ARM_DOWN -3
+#define INTAKE_IN 50 //old 60
 #define INTAKE_OUT 980
 
 Adafruit_MMA8451 mma = Adafruit_MMA8451(); //accelerometer
@@ -90,13 +90,13 @@ bool Arm::armAtSetpoint(){
 bool Arm::raiseArm(){
 	armSetpoint = ARM_UP;
 	armActive = !armAtSetpoint();
-	return armDelay(armAtSetpoint(),1000);
+	return armDelay(armAtSetpoint(),1500);
 }
 //Lowers arm - Returns true when target reached
 bool Arm::lowerArm(){
 	armSetpoint = ARM_DOWN;
 	armActive = !armAtSetpoint();
-	return armDelay(armAtSetpoint(), 1000);
+	return armDelay(armAtSetpoint(), 1500);
 }
 //Intakes four bar - Returns true when target reached
 bool Arm::grab(){
@@ -111,7 +111,7 @@ bool Arm::release(){
 }
 
 //return true only when a bool has been true for "delay" amount of time
-bool Arm::armDelay(bool latch, unsigned int delay){
+bool Arm::armDelay(bool latch, unsigned long delay){
   if(!latch){
     lastArmLatched = millis();
     return false;

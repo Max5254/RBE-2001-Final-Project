@@ -23,8 +23,10 @@ public:
   bool driveToButton(double);
   bool driveToBeamBreak(double);
   bool driveToPoint(double,double);
+  bool driveToPegReversed(double,double);
   bool driveToPeg(double,double);
   bool driveToReactor(double,double);
+  bool driveToReactorReversed(double,double);
   void odometry();
   void reset(double,double,double);
   double getX();

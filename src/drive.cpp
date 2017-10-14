@@ -27,6 +27,7 @@ void Drive::initialize(){
   odom.setScale(0.024, 5.4);  //drive scale , turn scale to map encoder tics to inches and degrees
 
   odom.reset(0,32,0);  //init robot location to x=0 y =32 theta=0
+  //0,-32,-180
 }
 
 /* drive forward a set distance using PID
@@ -42,6 +43,10 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
     drivePID.flush();
     straightPID.flush();
     driveStarting = false;
+    Serial.print("driving distance: ");
+    Serial.print(driveStartingPoint);
+    Serial.println(angle);
+
   }
 
   //scale input if driving at a -180 degreee angle
@@ -74,9 +79,9 @@ bool Drive::driveDistance(double setpoint, double angle, bool enabled){
 
   arcadeDrive(driveOutput , straightOutput);
 
-  Serial.print(abs(drivePID.getError()));
-  Serial.print(" ");
-  Serial.println(driveTolerance);
+  // Serial.print(abs(drivePID.getError()));
+  // Serial.print(" ");
+  // Serial.println(driveTolerance);
 
   //end condition met if in target rangle for 0.5 seconds
   bool done = booleanDelay(abs(drivePID.getError()) < driveTolerance , 500);
@@ -191,6 +196,9 @@ bool Drive::driveToPoint(double _x, double _y){
     Serial.print(" ");
     Serial.println(pointAngle);
 
+    lcd.setCursor(15, 0);
+    lcd.print(pointState);
+
     pointState++;
     break;
     case 1: //Turn to setpoint angle
@@ -286,6 +294,90 @@ bool Drive::driveToPeg(double _x, double _y){
   return done;
 }
 
+bool Drive::driveToPegReversed(double _xp, double _yp){
+  switch (pegState) {
+    case 0:
+       pegX = odom.getX() - _xp;
+       pegY = odom.getY() - _yp;
+       pegDistance = sqrt(pegX*pegX+pegY*pegY);
+       pegAngle = (pegX > 0 ? atan(pegX/pegY)* 57.2958 : 90 - atan(pegX/pegY)* 57.2958);
+
+      if(_xp > 0){
+        buttonDirection = 1;
+      } else {
+        buttonDirection = -1;
+      }
+
+      lcd.setCursor(0, 0);
+      lcd.print("                    ");
+      lcd.setCursor(0, 0);
+      lcd.print(pegAngle);
+      lcd.setCursor(4, 0);
+      lcd.print(_xp);
+      lcd.setCursor(8, 0);
+      lcd.print(_yp);
+
+      Serial.print(odom.getX());
+      Serial.print(" ");
+      Serial.print(odom.getY());
+      Serial.print(" ");
+      Serial.print(_xp);
+      Serial.print(" ");
+      Serial.print(_yp);
+      Serial.print(" ");
+       Serial.print(pegX);
+       Serial.print(" ");
+       Serial.print(pegY);
+       Serial.print(" ");
+       Serial.print(pegDistance);
+       Serial.print(" ");
+       Serial.println(pegAngle);
+
+      // lcd.setCursor(0, 0);
+      // lcd.print("                      ");
+      // lcd.setCursor(0, 0);
+      // lcd.print(_x);
+      // lcd.setCursor(6, 0);
+      // lcd.print(_y);
+      pegState++;
+      break;
+    case 1:
+    if(turnToAngle(pegAngle, true)) {
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+    case 2:
+    if(driveToLine(pegDistance, pegAngle)){
+      pegState++;
+      arcadeDrive(0, 0);
+      lineAngle = (((odom.getTheta() > 0 && odom.getTheta() < 90) || (odom.getTheta() < -90 && odom.getTheta() > -180)) ? 1.0 : -1.0);
+    }
+    break;
+    case 3:
+    if(turnToLine(lineAngle)){
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+    case 4:
+    if(driveToButton(90 * buttonDirection)){
+      pegState++;
+      arcadeDrive(0, 0);
+    }
+    break;
+  }
+    bool done = pegState > 4;
+    if(done){
+      pegState = 0;
+    }
+    // lcd.setCursor(15, 0);
+    // lcd.print(pegState);
+
+    return done;
+  }
+
+
 /* drive to a line at a specific coordinate point and turn into the line till at the reactor
 *  @param _x    the target x coordinate
 *  @param _y    the target y coordinate
@@ -337,7 +429,7 @@ bool Drive::driveToReactor(double _x, double _y){
     }
     break;
     case 4: //drive into beam break holding heading with PID
-    if(driveToBeamBreak(187 * buttonDirection)){
+    if(driveToBeamBreak(191 * buttonDirection)){
       reactorState++;
       arcadeDrive(0, 0);
     }
@@ -349,6 +441,83 @@ bool Drive::driveToReactor(double _x, double _y){
   }
   return done;
 }
+
+bool Drive::driveToReactorReversed(double _x, double _y){
+    switch (reactorState) {
+      case 0:
+         reactorX = odom.getX() - _x;
+         reactorY = odom.getY() - _y;
+         reactorDistance = sqrt(reactorX*reactorX+reactorY*reactorY) - 10;
+         //reactorAngle =  reactorX < 0 ? (_y > 0 ? atan(abs(reactorX)/abs(reactorY))* 57.2958 : 180 - atan(abs(reactorX)/abs(reactorY))* 57.2958) : -atan(abs(reactorX)/abs(reactorY))* 57.2958;
+         reactorAngle = -(180 - atan(reactorX/reactorY)* 57.2958);
+
+        if(reactorY > 0){
+          buttonDirection = 1;
+        } else {
+          buttonDirection = 0;
+        }
+
+        lcd.setCursor(0, 0);
+        lcd.print("                    ");
+        lcd.setCursor(0, 0);
+        lcd.print(reactorAngle);
+        lcd.setCursor(4, 0);
+        lcd.print(_x);
+        lcd.setCursor(8, 0);
+        lcd.print(_y);
+
+        Serial.print(odom.getX());
+        Serial.print(" ");
+        Serial.print(odom.getY());
+        Serial.print(" ");
+         Serial.print(_x);
+         Serial.print(" ");
+         Serial.print(_y);
+         Serial.print(" ");
+         Serial.print(reactorX);
+         Serial.print(" ");
+         Serial.print(reactorY);
+         Serial.print(" ");
+         Serial.print(reactorDistance);
+         Serial.print(" ");
+         Serial.println(reactorAngle);
+        reactorState++;
+        break;
+      case 1:
+      if(turnToAngle(reactorAngle, true)) {
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+      case 2:
+      if(driveToReactorLine(reactorAngle)){
+        reactorState++;
+        arcadeDrive(0, 0);
+        lineAngle = (((odom.getTheta() < 180 && odom.getTheta() > 90) || (odom.getTheta() < 0 && odom.getTheta() > -90)) ? 1.0 : -1.0);
+      }
+      break;
+      case 3:
+      if(turnToLine(lineAngle)){
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+      case 4:
+      if(driveToBeamBreak(187 * buttonDirection)){
+        reactorState++;
+        arcadeDrive(0, 0);
+      }
+      break;
+    }
+      bool done = reactorState > 4;
+      if(done){
+        reactorState = 0;
+      }
+      // lcd.setCursor(15, 0);
+      // lcd.print(reactorState);
+
+      return done;
+    }
 
 /* turn to specific angle using PID
 *  @param angle    the target angle to turn
@@ -399,7 +568,7 @@ int Drive::frcToServo(double input){
 }
 
 /* returns true when input has been true for certian time
-*  @param latch  the value of the condition you want to  
+*  @param latch  the value of the condition you want to
 *  @param delay  the time the input must be true to return true
 *  @return true when in range for specified time
 */bool Drive::booleanDelay(bool latch, unsigned int delay){

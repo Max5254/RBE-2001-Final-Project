@@ -64,6 +64,12 @@ task Scheduler::makeDriveToPeg(double _x, double _y){
 task Scheduler::makeDriveToReactor(double _x, double _y){
   return makeTask(DRIVE_TO_REACTOR,_x,_y);
 }
+task Scheduler::makeDriveToPegReversed(double _x, double _y){
+  return makeTask(DRIVE_TO_PEG_REVERSED,_x,_y);
+}
+task Scheduler::makeDriveToReactorReversed(double _x, double _y){
+  return makeTask(DRIVE_TO_REACTOR_REVERSED,_x,_y);
+}
 task Scheduler::makeresetOdomXY(double _x, double _y){
   return makeTask(RESET_ODOM_XY,_x,_y);
 }
@@ -178,7 +184,6 @@ void Scheduler::build(){
   schedule.push_back(makeDriveDistance(-14, -90));
 
   //Driving to first peg
-  lineSub = 7;
   schedule.push_back(makeDriveToPeg(13, pathPlan[1])); // old 5,7
   schedule.push_back(makeGrab());
   schedule.push_back(makeLOW());
@@ -187,53 +192,53 @@ void Scheduler::build(){
 
   //Driving back to reactor 1
   schedule.push_back(makeLower());
-  schedule.push_back(makeDriveToReactor(0, 25));
+  schedule.push_back(makeDriveToReactor(0, 32));
   schedule.push_back(makeRelease());
   schedule.push_back(makeOFF());
 
   //Driving to reactor 2
   schedule.push_back(makeDriveDistance(-20, 0));
-  schedule.push_back(makeDriveToPoint(-10, -10));
+  schedule.push_back(makeDriveToPoint(-8, -10));
   schedule.push_back(makeDriveToReactor(0, -30));
 
-  // //Drive to deposit 2nd rod in storage
+
+  //Drive to deposit 2nd rod in storage
   schedule.push_back(makeGrab());
   schedule.push_back(makeHIGH());
   schedule.push_back(makeRaise());
   schedule.push_back(makeDriveDistance(-8, 180));
 
-  //second half that isn't working yet :(
+  //Drive to peg, release rod, then back up
+  schedule.push_back(makeDriveToPegReversed(-6, pathPlan[2]));  //old -8,-3
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+  schedule.push_back(makeResetOdomTheta(-90));
+  schedule.push_back(makeDriveDistance(-5, -90));
 
-  // schedule.push_back(makeDriveToPeg(-9, pathPlan[2]));  //old -8,-3
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeOFF());
-  // schedule.push_back(makeResetOdomTheta(-90));
-  // schedule.push_back(makeDriveDistance(-5, -90));
-  //
-  // //Driving to pick up last rod
-  // schedule.push_back(makeDriveToPeg(3, pathPlan[3])); // old 5,7
-  // schedule.push_back(makeGrab());
-  // schedule.push_back(makeLOW());
-  // schedule.push_back(makeResetOdomTheta(90));
-  // schedule.push_back(makeDriveDistance(-5, 90));
-  //
-  // //Driving back to reactor 1
-  // schedule.push_back(makeLower());
-  // schedule.push_back(makeDriveToReactor(0, -25));
-  // schedule.push_back(makeRelease());
-  // schedule.push_back(makeOFF());
-  //
-  //
-  // //Back up
-  // schedule.push_back(makeRaise());
-  // schedule.push_back(makeDriveDistance(-8, 180));
+  //Driving to pick up last rod
+  schedule.push_back(makeDriveToPegReversed(6, pathPlan[3])); // old 5,7
+  schedule.push_back(makeGrab());
+  schedule.push_back(makeLOW());
+  schedule.push_back(makeResetOdomTheta(90));
+  schedule.push_back(makeDriveDistance(-5, 90));
+
+  //Driving back to reactor 1
+  schedule.push_back(makeLower());
+  schedule.push_back(makeDriveToReactorReversed(0, -20));
+  schedule.push_back(makeRelease());
+  schedule.push_back(makeOFF());
+
+
+  //Back up
+  schedule.push_back(makeRaise());
+  schedule.push_back(makeDriveDistance(-8, 180));
 }
 
 /*
 * loop through the generated schedule of events in sequence
 *
 * allows for order of events to be changed easily by having sequence
-* defined seperatly from state machine 
+* defined seperatly from state machine
 */
 bool Scheduler::run(bool enabled){
   if(enabled){
@@ -294,6 +299,16 @@ bool Scheduler::run(bool enabled){
           i++;
           drive.arcadeDrive(0, 0); }
         break;
+        case DRIVE_TO_PEG_REVERSED:
+          if(drive.driveToPegReversed(schedule[i].distance,schedule[i].angle)){
+            i++;
+            drive.arcadeDrive(0, 0); }
+            break;
+       case DRIVE_TO_REACTOR_REVERSED:
+            if(drive.driveToReactorReversed(schedule[i].distance,schedule[i].angle)){
+              i++;
+              drive.arcadeDrive(0, 0); }
+            break;
    case RESET_ODOM_XY:
         drive.reset(schedule[i].distance, schedule[i].angle, drive.getTheta());
         i++;
@@ -322,8 +337,8 @@ bool Scheduler::run(bool enabled){
 } else {
   drive.arcadeDrive(0, 0);
 }
-  lcd.setCursor(2, 0);
-  lcd.print(int(schedule[i].function));
+  // lcd.setCursor(2, 0);
+  // lcd.print(int(schedule[i].function));
   //Serial.print(enabled);
   //Serial.print(" ");
   //Serial.println(schedule[i].function);

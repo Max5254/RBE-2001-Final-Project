@@ -7,7 +7,7 @@
 #include "helpers.h"
 #include "scheduler.h"
 
-#include "Adafruit_NeoPixel.h"
+#include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -72,7 +72,7 @@ void setup() {
   pinMode(startPort,INPUT_PULLUP);
 
   setLEDs(PURPLE);
-  while(msg.isStopped()){ //wait for you to enter pegs into BT
+  while(msg.isStopped() && digitalRead(startPort)){ //wait for you to enter pegs into BT
     msg.read();
     msg.heartbeat();
   }
@@ -106,25 +106,6 @@ void printStorageSupplyToLCD(){
   bool *supplyArray = msg.getSupplyAvailability();
   sprintf(buffer,"Supply:  %d %d %d %d",supplyArray[0],supplyArray[1],supplyArray[2],supplyArray[3]);
   lcd.print(buffer);
-}
-
-void printIntakeToLCD(){
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(arm.intakeInput);
-  lcd.setCursor(0,1);
-  lcd.print(arm.intakeOutput);
-  lcd.setCursor(8,1);
-  lcd.print(arm.Kp_intake);
-}
-
-void printArmToLCD(){
-  lcd.setCursor(0,0);
-  lcd.print(arm.armInput);
-  lcd.setCursor(0,1);
-  lcd.print(arm.armOutput);
-  lcd.setCursor(8,0);
-  lcd.print(arm.armSetpoint);
 }
 
 ///////////////
@@ -161,8 +142,7 @@ void loop() {
   scheduler.run(enabled);
   arm.updateArm(true);
 
-  //printOdomToLCD();
-  printArmToLCD();
+  printOdomToLCD();
 
   delay(20);
 }
